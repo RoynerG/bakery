@@ -8,24 +8,28 @@ use App\Database;
 /**
  * Modelo: Nota
  *
- * Bloc de notas simple del administrador. Cada nota tiene un color
- * pastel para identificarla visualmente.
+ * Bloc de notas del admin. Cada nota puede tener una categoría
+ * asociada (etiqueta con emoji + nombre).
  */
 final class Nota
 {
-    public const COLORES = ['rosa', 'crema', 'menta', 'chocolate'];
-
     public static function all(): array
     {
         return Database::getInstance()->fetchAll(
-            'SELECT * FROM notas ORDER BY updated_at DESC, id DESC'
+            'SELECT n.*, c.emoji AS cat_emoji, c.nombre AS cat_nombre
+               FROM notas n
+          LEFT JOIN categorias c ON c.id = n.categoria_id
+              ORDER BY n.updated_at DESC, n.id DESC'
         );
     }
 
     public static function find(int $id): ?array
     {
         return Database::getInstance()->fetchOne(
-            'SELECT * FROM notas WHERE id = ?',
+            'SELECT n.*, c.emoji AS cat_emoji, c.nombre AS cat_nombre
+               FROM notas n
+          LEFT JOIN categorias c ON c.id = n.categoria_id
+              WHERE n.id = ?',
             [$id]
         );
     }
@@ -35,11 +39,11 @@ final class Nota
         self::validate($data);
         $db = Database::getInstance();
         $db->execute(
-            'INSERT INTO notas (titulo, contenido, color) VALUES (?, ?, ?)',
+            'INSERT INTO notas (titulo, contenido, categoria_id) VALUES (?, ?, ?)',
             [
                 trim($data['titulo']),
                 isset($data['contenido']) ? trim($data['contenido']) : '',
-                self::normalizarColor($data['color'] ?? 'rosa'),
+                self::normalizarCategoria($data['categoria_id'] ?? null),
             ]
         );
         return (int)$db->lastInsertId();
@@ -50,13 +54,13 @@ final class Nota
         self::validate($data);
         $affected = Database::getInstance()->execute(
             'UPDATE notas
-                SET titulo = ?, contenido = ?, color = ?,
+                SET titulo = ?, contenido = ?, categoria_id = ?,
                     updated_at = CURRENT_TIMESTAMP
               WHERE id = ?',
             [
                 trim($data['titulo']),
                 isset($data['contenido']) ? trim($data['contenido']) : '',
-                self::normalizarColor($data['color'] ?? 'rosa'),
+                self::normalizarCategoria($data['categoria_id'] ?? null),
                 $id,
             ]
         )->rowCount();
@@ -82,8 +86,10 @@ final class Nota
         }
     }
 
-    private static function normalizarColor(string $color): string
+    private static function normalizarCategoria($id): ?int
     {
-        return in_array($color, self::COLORES, true) ? $color : 'rosa';
+        if ($id === null || $id === '' || $id === '0') return null;
+        $id = (int)$id;
+        return $id > 0 ? $id : null;
     }
 }

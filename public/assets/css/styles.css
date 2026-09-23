@@ -709,6 +709,7 @@ input[type="range"]::-moz-range-thumb {
   padding: 1.25rem 1.25rem 0.75rem;
   border-radius: 1.25rem;
   border: 2px solid rgba(255,255,255,.6);
+  background: linear-gradient(135deg, #fff8f5 0%, #fff0f5 100%);
   box-shadow: 0 10px 24px -8px rgba(255,107,157,.18),
               0 2px 4px rgba(190,80,120,.05);
   position: relative;
@@ -765,6 +766,46 @@ input[type="range"]::-moz-range-thumb {
   transition: transform .15s ease;
 }
 .nota-color-swatch:hover { transform: scale(1.08); }
+.nota-cat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(255,255,255,.7);
+  border: 1.5px solid rgba(255,182,193,.7);
+  color: #c93a73;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+/* Selector de categorías (pastillas) */
+.cat-pick { display: inline-block; }
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #fff;
+  border: 2px solid #ffd6e7;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #5d2f0c;
+  cursor: pointer;
+  transition: all .15s ease;
+  user-select: none;
+}
+.cat-pill:hover {
+  background: #fff0f5;
+  border-color: #ff8fb7;
+}
+.cat-pick input:checked + .cat-pill {
+  background: linear-gradient(135deg, #ff6b9d, #ff8fb7);
+  color: #fff;
+  border-color: #ff6b9d;
+}
 
 /* =========================================================
    FULLCALENDAR — overrides pastel

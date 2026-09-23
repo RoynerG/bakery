@@ -270,21 +270,13 @@ $titulo = $esEdicion ? 'Editar receta' : 'Nueva receta';
       <p class="step-subtitle">Agrega un paso a la vez. ✨</p>
 
       <div class="space-y-3">
-        <template x-if="pasos.length === 0">
-          <div class="text-center text-chocolate-400 py-10 bg-cream-50 rounded-2xl border-2 border-dashed border-rose-200">
-            <div class="text-5xl mb-2">👩‍🍳</div>
-            <p class="font-semibold">Aún no has agregado ningún paso.</p>
-            <p class="text-sm mt-1">Empieza con el primero usando el botón de abajo.</p>
-          </div>
-        </template>
-
         <template x-for="(paso, i) in pasos" :key="i">
           <div class="paso-edit-row">
             <div class="paso-edit-num" x-text="i + 1"></div>
             <input type="text"
                    class="paso-input"
                    x-model="paso.texto"
-                   :placeholder="'Ej. Precalienta el horno a 180°C'"
+                   placeholder="Ej. Precalienta el horno a 180°C"
                    @keydown.enter.prevent="addPaso()">
             <div class="flex flex-col gap-1">
               <button type="button" @click="movePasoUp(i)" :disabled="i === 0"
@@ -303,9 +295,10 @@ $titulo = $esEdicion ? 'Editar receta' : 'Nueva receta';
           <span class="text-xl">＋</span> Agregar paso
         </button>
 
-        <p class="text-xs text-chocolate-500 mt-2">
+        <p class="text-xs text-chocolate-500 mt-2 text-center"
+           x-show="pasos.every(p => !p.texto || !p.texto.trim())">
           💡 Tip: presiona <kbd class="px-1.5 py-0.5 bg-rose-100 rounded text-rose-700 font-mono">Enter</kbd>
-          para agregar el siguiente paso automáticamente.
+          dentro de un paso para agregar el siguiente automáticamente.
         </p>
       </div>
     </div>

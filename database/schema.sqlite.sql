@@ -66,37 +66,50 @@ CREATE INDEX IF NOT EXISTS idx_ri_receta      ON receta_ingredientes(receta_id);
 CREATE INDEX IF NOT EXISTS idx_ri_ingrediente ON receta_ingredientes(ingrediente_id);
 
 -- ----------------------------------------------------------
+-- Tabla: categorias (etiquetas con emoji para notas)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS categorias (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  emoji       TEXT NOT NULL,
+  nombre      TEXT NOT NULL UNIQUE,
+  created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ----------------------------------------------------------
 -- Tabla: notas (bloc de notas del admin)
 -- ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS notas (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  titulo      TEXT NOT NULL,
-  contenido    TEXT NOT NULL DEFAULT '',
-  color       TEXT NOT NULL DEFAULT 'rosa'
-              CHECK (color IN ('rosa','crema','menta','chocolate')),
-  created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo        TEXT NOT NULL,
+  contenido     TEXT NOT NULL DEFAULT '',
+  categoria_id  INTEGER,
+  created_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE SET NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_notas_updated ON notas(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notas_updated    ON notas(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notas_categoria  ON notas(categoria_id);
 
 -- ----------------------------------------------------------
 -- Tabla: agenda (eventos / citas)
 -- ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS agenda (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  titulo      TEXT NOT NULL,
-  descripcion TEXT,
-  fecha       TEXT NOT NULL,                 -- YYYY-MM-DD
-  hora        TEXT,                          -- HH:MM (opcional)
-  todo_el_dia INTEGER NOT NULL DEFAULT 0,
-  color       TEXT NOT NULL DEFAULT 'rosa'
-              CHECK (color IN ('rosa','crema','menta','chocolate')),
-  created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo       TEXT NOT NULL,
+  descripcion  TEXT,
+  fecha        TEXT NOT NULL,                 -- YYYY-MM-DD
+  fecha_fin    TEXT,                          -- YYYY-MM-DD opcional
+  hora         TEXT,                          -- HH:MM (opcional)
+  todo_el_dia  INTEGER NOT NULL DEFAULT 0,
+  color        TEXT NOT NULL DEFAULT 'rosa'
+               CHECK (color IN ('rosa','crema','menta','chocolate')),
+  created_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_agenda_fecha ON agenda(fecha);
+CREATE INDEX IF NOT EXISTS idx_agenda_fecha     ON agenda(fecha);
+CREATE INDEX IF NOT EXISTS idx_agenda_fecha_fin ON agenda(fecha_fin);
 
 -- ==========================================================
 -- Datos iniciales de ejemplo (opcional)
@@ -112,3 +125,13 @@ INSERT INTO ingredientes (nombre, unidad_medida, costo_base, notas) VALUES
   ('Vainilla',              'mililitro', 1.20, 'Extracto natural'),
   ('Polvo para hornear',    'gramo',   0.45, 'Doble acción'),
   ('Sal',                   'gramo',   0.05, 'Fina');
+
+-- Categorías predeterminadas
+INSERT INTO categorias (emoji, nombre) VALUES
+  ('🍰', 'Pedidos'),
+  ('🎂', 'Cumpleaños'),
+  ('💡', 'Ideas'),
+  ('📞', 'Llamadas'),
+  ('📦', 'Inventario'),
+  ('💰', 'Ventas'),
+  ('📝', 'General');

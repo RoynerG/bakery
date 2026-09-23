@@ -93,11 +93,18 @@ $titulo = 'Agenda';
                placeholder="Ej. Entrega pastel de cumpleaños 🎂">
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
-          <label class="block text-sm font-bold text-chocolate-700 mb-1">Fecha *</label>
+          <label class="block text-sm font-bold text-chocolate-700 mb-1">Fecha inicio *</label>
           <input type="date" name="fecha" required
-                 value="<?= e(old('fecha', $eventoEditar['fecha'] ?? date('Y-m-d'))) ?>">
+                 value="<?= e(old('fecha', $eventoEditar['fecha'] ?? ($_GET['fecha'] ?? date('Y-m-d')))) ?>">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-chocolate-700 mb-1">Fecha fin <span class="text-chocolate-500 font-normal">(opcional)</span></label>
+          <input type="date" name="fecha_fin"
+                 min="<?= e(old('fecha', $eventoEditar['fecha'] ?? date('Y-m-d'))) ?>"
+                 value="<?= e(old('fecha_fin', $eventoEditar['fecha_fin'] ?? '')) ?>">
+          <p class="text-xs text-chocolate-500 mt-1">Para eventos de varios días.</p>
         </div>
         <div>
           <label class="block text-sm font-bold text-chocolate-700 mb-1">Hora</label>
@@ -178,11 +185,14 @@ $titulo = 'Agenda';
           </div>
 
           <div class="space-y-2 text-sm text-chocolate-800">
-            <p><b>📅 Fecha:</b> <span x-text="fechaFmt(evento.start)"></span></p>
-            <template x-if="!evento.allDay && evento.start">
+            <p><b>📅 Inicio:</b> <span x-text="fechaFmt(evento.start)"></span></p>
+            <template x-if="evento.extendedProps.fecha_fin">
+              <p><b>🏁 Fin:</b> <span x-text="fechaFmt(evento.extendedProps.fecha_fin)"></span></p>
+            </template>
+            <template x-if="!evento.allDay && evento.start && !evento.extendedProps.todo_el_dia">
               <p><b>🕐 Hora:</b> <span x-text="horaFmt(evento.start)"></span></p>
             </template>
-            <template x-if="evento.allDay">
+            <template x-if="evento.allDay || evento.extendedProps.todo_el_dia">
               <p><b>🕐 Todo el día</b></p>
             </template>
             <template x-if="evento.extendedProps.descripcion">

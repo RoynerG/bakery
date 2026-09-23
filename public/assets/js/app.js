@@ -8,87 +8,92 @@ document.addEventListener('alpine:init', () => {
   /* ============================================================
      Componente: recipeWizard (formulario de receta paso a paso)
      ============================================================ */
-  Alpine.data('recipeWizard', (initial = {}) => ({
-    // ---------- Estado general ----------
-    step: 1,
-    totalSteps: 5,
-    submitting: false,
-    progress: 0,
-    loadingMsg: '',
+  Alpine.data('recipeWizard', (initial = {}) => {
+    // Pre-procesamos los pasos al crear la instancia para que
+    // la reactividad de Alpine no tenga que reemplazar arrays.
+    const raw = (initial.instrucciones ?? '').toString();
+    const lines = raw.split(/\r?\n/)
+                     .map(l => l.replace(/^\s*\d+[.)]\s*/, '').trim())
+                     .filter(l => l.length > 0);
+    const pasosIniciales = lines.length > 0
+      ? lines.map(t => ({ texto: t }))
+      : [{ texto: '' }];
 
-    // ---------- Datos de la receta ----------
-    nombre:        initial.nombre        ?? '',
-    descripcion:   initial.descripcion   ?? '',
-    porciones:     initial.porciones     ?? 8,
-    pasos: [],
+    return {
+      // ---------- Estado general ----------
+      step: 1,
+      totalSteps: 5,
+      submitting: false,
+      progress: 0,
+      loadingMsg: '',
 
-    init() {
-      // Convierte el string inicial de instrucciones (DB) en un array de pasos
-      const raw = (initial.instrucciones ?? '').toString();
-      const lines = raw.split(/\r?\n/)
-                       .map(l => l.replace(/^\s*\d+[.)]\s*/, '').trim())
-                       .filter(l => l.length > 0);
-      this.pasos = lines.map(t => ({ texto: t }));
-    },
+      // ---------- Datos de la receta ----------
+      nombre:        initial.nombre        ?? '',
+      descripcion:   initial.descripcion   ?? '',
+      porciones:     initial.porciones     ?? 8,
+      pasos: pasosIniciales,
 
-    // ---------- Ingredientes ----------
-    ingredientes: initial.ingredientes ?? [],
-    items: initial.items ?? [],
+      // ---------- Ingredientes ----------
+      ingredientes: initial.ingredientes ?? [],
+      items: initial.items ?? [],
 
-    // ---------- Imagen ----------
-    imagenFile: null,
-    imagenPreview: initial.imagenActual ?? null,
+      // ---------- Imagen ----------
+      imagenFile: null,
+      imagenPreview: initial.imagenActual ?? null,
 
-    // ---------- Reporte de costos ----------
-    iva: 0,
-    margen: 60,
-    otrosCostos: 0,
+      // ---------- Reporte de costos ----------
+      iva: 0,
+      margen: 60,
+      otrosCostos: 0,
 
-    // ---------- Mensajes de carga pasteleros ----------
-    loadMsgs: [
-      '🧁 Precalentando el horno...',
-      '🥣 Mezclando los ingredientes...',
-      '🔥 Horneando a 180°C...',
-      '🎨 Decorando con frosting...',
-      '✨ Dando el toque final...',
-      '🍰 ¡Lista tu delicia!',
-    ],
+      // ---------- Mensajes de carga pasteleros ----------
+      loadMsgs: [
+        '🧁 Precalentando el horno...',
+        '🥣 Mezclando los ingredientes...',
+        '🔥 Horneando a 180°C...',
+        '🎨 Decorando con frosting...',
+        '✨ Dando el toque final...',
+        '🍰 ¡Lista tu delicia!',
+      ],
 
-    get steps() {
-      return [
-        { n: 1, icon: '📝', label: 'Básicos' },
-        { n: 2, icon: '🥣', label: 'Ingredientes' },
-        { n: 3, icon: '👩‍🍳', label: 'Preparación' },
-        { n: 4, icon: '📸', label: 'Foto' },
-        { n: 5, icon: '💰', label: 'Reporte' },
-      ];
-    },
-    get progressPct() {
-      return Math.round(((this.step - 1) / (this.totalSteps - 1)) * 100);
-    },
+      get steps() {
+        return [
+          { n: 1, icon: '📝', label: 'Básicos' },
+          { n: 2, icon: '🥣', label: 'Ingredientes' },
+          { n: 3, icon: '👩‍🍳', label: 'Preparación' },
+          { n: 4, icon: '📸', label: 'Foto' },
+          { n: 5, icon: '💰', label: 'Reporte' },
+        ];
+      },
+      get progressPct() {
+        return Math.round(((this.step - 1) / (this.totalSteps - 1)) * 100);
+      },
 
-    get step1Valid() { return this.nombre.trim().length >= 2 && parseInt(this.porciones) > 0; },
-    get step2Valid() { return this.items.length > 0 && this.items.every(i => i.ingrediente_id && parseFloat(i.cantidad) > 0); },
-    get step3Valid() { return this.pasos.length > 0 && this.pasos.some(p => p.texto.trim().length >= 3); },
+      get step1Valid() { return this.nombre.trim().length >= 2 && parseInt(this.porciones) > 0; },
+      get step2Valid() { return this.items.length > 0 && this.items.every(i => i.ingrediente_id && parseFloat(i.cantidad) > 0); },
+      get step3Valid() {
+        return this.pasos.length > 0 && this.pasos.some(p => (p.texto || '').trim().length >= 3);
+      },
 
-    addPaso() {
-      this.pasos.push({ texto: '' });
-      // Enfoca el nuevo input en el siguiente tick
-      this.$nextTick(() => {
-        const inputs = document.querySelectorAll('.paso-input');
-        const last = inputs[inputs.length - 1];
-        if (last) last.focus();
-      });
-    },
-    removePaso(i) { this.pasos.splice(i, 1); },
-    movePasoUp(i) {
-      if (i <= 0) return;
-      [this.pasos[i - 1], this.pasos[i]] = [this.pasos[i], this.pasos[i - 1]];
-    },
-    movePasoDown(i) {
-      if (i >= this.pasos.length - 1) return;
-      [this.pasos[i + 1], this.pasos[i]] = [this.pasos[i], this.pasos[i + 1]];
-    },
+      addPaso() {
+        this.pasos.push({ texto: '' });
+      },
+      removePaso(i) {
+        if (this.pasos.length <= 1) {
+          // Siempre debe quedar al menos un input visible
+          this.pasos[0] = { texto: '' };
+          return;
+        }
+        this.pasos.splice(i, 1);
+      },
+      movePasoUp(i) {
+        if (i <= 0) return;
+        [this.pasos[i - 1], this.pasos[i]] = [this.pasos[i], this.pasos[i - 1]];
+      },
+      movePasoDown(i) {
+        if (i >= this.pasos.length - 1) return;
+        [this.pasos[i + 1], this.pasos[i]] = [this.pasos[i], this.pasos[i + 1]];
+      },
     get step4Valid() { return true; },
     get step5Valid() { return true; },
 
@@ -163,8 +168,14 @@ document.addEventListener('alpine:init', () => {
       if (inp) inp.value = '';
     },
 
-    money(v) { const n = parseFloat(v) || 0; return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
-    num(v, d = 3) { const n = parseFloat(v) || 0; return n.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: d }); },
+    money(v) {
+      const n = parseFloat(v) || 0;
+      return '$' + n.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    },
+    num(v, d = 0) {
+      const n = parseFloat(v) || 0;
+      return n.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: d });
+    },
     cantUnidad(unidad, cant) {
       const c = parseFloat(cant) || 0;
       const str = (Math.round(c * 1000) / 1000).toString().replace(/\.?0+$/, '');
@@ -199,7 +210,8 @@ document.addEventListener('alpine:init', () => {
       }
       form.submit();
     },
-  }));
+  };
+  });
 
   Alpine.data('confirmDelete', (message = '¿Estás seguro?') => ({
     message,

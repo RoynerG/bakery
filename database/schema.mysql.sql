@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS `recetas`;
 DROP TABLE IF EXISTS `ingredientes`;
 DROP TABLE IF EXISTS `notas`;
 DROP TABLE IF EXISTS `agenda`;
+DROP TABLE IF EXISTS `categorias`;
 DROP TABLE IF EXISTS `usuarios`;
 
 -- ----------------------------------------------------------
@@ -89,17 +90,33 @@ CREATE TABLE `receta_ingredientes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------
+-- Tabla: categorias (etiquetas con emoji para notas)
+-- ----------------------------------------------------------
+CREATE TABLE `categorias` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `emoji`      VARCHAR(8) NOT NULL,
+  `nombre`     VARCHAR(60) NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_categoria_nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
 -- Tabla: notas (bloc de notas del admin)
 -- ----------------------------------------------------------
 CREATE TABLE `notas` (
-  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `titulo`     VARCHAR(180) NOT NULL,
-  `contenido`  TEXT NOT NULL,
-  `color`      ENUM('rosa','crema','menta','chocolate') NOT NULL DEFAULT 'rosa',
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titulo`       VARCHAR(180) NOT NULL,
+  `contenido`    TEXT NOT NULL,
+  `categoria_id` INT UNSIGNED DEFAULT NULL,
+  `created_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_updated` (`updated_at`)
+  KEY `idx_updated`    (`updated_at`),
+  KEY `idx_categoria`  (`categoria_id`),
+  CONSTRAINT `fk_notas_categoria`
+    FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------
@@ -110,13 +127,15 @@ CREATE TABLE `agenda` (
   `titulo`      VARCHAR(180) NOT NULL,
   `descripcion` TEXT,
   `fecha`       DATE NOT NULL,
+  `fecha_fin`   DATE DEFAULT NULL,
   `hora`        TIME DEFAULT NULL,
   `todo_el_dia` TINYINT(1) NOT NULL DEFAULT 0,
   `color`       ENUM('rosa','crema','menta','chocolate') NOT NULL DEFAULT 'rosa',
   `created_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_fecha` (`fecha`)
+  KEY `idx_fecha`     (`fecha`),
+  KEY `idx_fecha_fin` (`fecha_fin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -135,6 +154,16 @@ INSERT INTO `ingredientes` (`nombre`, `unidad_medida`, `costo_base`, `notas`) VA
   ('Vainilla',                 'mililitro', 1.20, 'Extracto natural'),
   ('Polvo para hornear',       'gramo',   0.45, 'Doble acción'),
   ('Sal',                      'gramo',   0.05, 'Fina');
+
+-- Categorías predeterminadas para las notas
+INSERT INTO `categorias` (`emoji`, `nombre`) VALUES
+  ('🍰', 'Pedidos'),
+  ('🎂', 'Cumpleaños'),
+  ('💡', 'Ideas'),
+  ('📞', 'Llamadas'),
+  ('📦', 'Inventario'),
+  ('💰', 'Ventas'),
+  ('📝', 'General');
 
 -- ==========================================================
 -- Fin del esquema
