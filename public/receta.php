@@ -267,32 +267,46 @@ $titulo = $esEdicion ? 'Editar receta' : 'Nueva receta';
        x-cloak>
     <div class="step-panel" data-icon="👩‍🍳">
       <h2 class="step-title">Preparación paso a paso</h2>
-      <p class="step-subtitle">Escribe cada paso en una línea nueva. ✨</p>
+      <p class="step-subtitle">Agrega un paso a la vez. ✨</p>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-bold text-chocolate-700 mb-1">Tus instrucciones</label>
-          <textarea x-model="instrucciones"
-                    placeholder="1. Precalienta el horno a 180°C&#10;2. Bate la mantequilla con el azúcar&#10;3. Agrega los huevos uno a uno&#10;4. ..."></textarea>
-          <p class="text-xs text-chocolate-500 mt-2">💡 Cada línea será un paso numerado automáticamente.</p>
-        </div>
-        <div>
-          <label class="block text-sm font-bold text-chocolate-700 mb-1">Vista previa</label>
-          <div class="bg-cream-50 rounded-2xl p-4 border-2 border-rose-100 min-h-[200px]">
-            <template x-if="listaPasos.length === 0">
-              <div class="text-center text-chocolate-400 py-8">
-                <div class="text-4xl mb-2">📝</div>
-                <p>Tus pasos aparecerán aquí...</p>
-              </div>
-            </template>
-            <template x-for="(paso, i) in listaPasos" :key="i">
-              <div class="paso-item">
-                <div class="paso-num" x-text="i + 1"></div>
-                <div class="flex-1 text-chocolate-800 pt-1" x-text="paso"></div>
-              </div>
-            </template>
+      <div class="space-y-3">
+        <template x-if="pasos.length === 0">
+          <div class="text-center text-chocolate-400 py-10 bg-cream-50 rounded-2xl border-2 border-dashed border-rose-200">
+            <div class="text-5xl mb-2">👩‍🍳</div>
+            <p class="font-semibold">Aún no has agregado ningún paso.</p>
+            <p class="text-sm mt-1">Empieza con el primero usando el botón de abajo.</p>
           </div>
-        </div>
+        </template>
+
+        <template x-for="(paso, i) in pasos" :key="i">
+          <div class="paso-edit-row">
+            <div class="paso-edit-num" x-text="i + 1"></div>
+            <input type="text"
+                   class="paso-input"
+                   x-model="paso.texto"
+                   :placeholder="'Ej. Precalienta el horno a 180°C'"
+                   @keydown.enter.prevent="addPaso()">
+            <div class="flex flex-col gap-1">
+              <button type="button" @click="movePasoUp(i)" :disabled="i === 0"
+                      class="paso-edit-btn" title="Subir">▲</button>
+              <button type="button" @click="movePasoDown(i)" :disabled="i === pasos.length - 1"
+                      class="paso-edit-btn" title="Bajar">▼</button>
+            </div>
+            <button type="button" @click="removePaso(i)"
+                    class="paso-edit-btn !text-rose-500 hover:!bg-rose-100"
+                    title="Quitar paso">✕</button>
+          </div>
+        </template>
+
+        <button type="button" @click="addPaso()"
+                class="btn btn-secondary w-full justify-center !border-dashed">
+          <span class="text-xl">＋</span> Agregar paso
+        </button>
+
+        <p class="text-xs text-chocolate-500 mt-2">
+          💡 Tip: presiona <kbd class="px-1.5 py-0.5 bg-rose-100 rounded text-rose-700 font-mono">Enter</kbd>
+          para agregar el siguiente paso automáticamente.
+        </p>
       </div>
     </div>
   </div>
@@ -473,7 +487,7 @@ $titulo = $esEdicion ? 'Editar receta' : 'Nueva receta';
   <input type="hidden" name="nombre" :value="nombre">
   <input type="hidden" name="descripcion" :value="descripcion">
   <input type="hidden" name="porciones" :value="porciones">
-  <input type="hidden" name="instrucciones" :value="instrucciones">
+  <input type="hidden" name="instrucciones" :value="listaPasos.join('\n')">
   <input type="hidden" name="ingredientes_json" :value="itemsJson">
 </form>
 

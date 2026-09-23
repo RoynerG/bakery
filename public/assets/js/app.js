@@ -20,7 +20,16 @@ document.addEventListener('alpine:init', () => {
     nombre:        initial.nombre        ?? '',
     descripcion:   initial.descripcion   ?? '',
     porciones:     initial.porciones     ?? 8,
-    instrucciones: initial.instrucciones ?? '',
+    pasos: [],
+
+    init() {
+      // Convierte el string inicial de instrucciones (DB) en un array de pasos
+      const raw = (initial.instrucciones ?? '').toString();
+      const lines = raw.split(/\r?\n/)
+                       .map(l => l.replace(/^\s*\d+[.)]\s*/, '').trim())
+                       .filter(l => l.length > 0);
+      this.pasos = lines.map(t => ({ texto: t }));
+    },
 
     // ---------- Ingredientes ----------
     ingredientes: initial.ingredientes ?? [],
@@ -60,7 +69,26 @@ document.addEventListener('alpine:init', () => {
 
     get step1Valid() { return this.nombre.trim().length >= 2 && parseInt(this.porciones) > 0; },
     get step2Valid() { return this.items.length > 0 && this.items.every(i => i.ingrediente_id && parseFloat(i.cantidad) > 0); },
-    get step3Valid() { return this.instrucciones.trim().length >= 5; },
+    get step3Valid() { return this.pasos.length > 0 && this.pasos.some(p => p.texto.trim().length >= 3); },
+
+    addPaso() {
+      this.pasos.push({ texto: '' });
+      // Enfoca el nuevo input en el siguiente tick
+      this.$nextTick(() => {
+        const inputs = document.querySelectorAll('.paso-input');
+        const last = inputs[inputs.length - 1];
+        if (last) last.focus();
+      });
+    },
+    removePaso(i) { this.pasos.splice(i, 1); },
+    movePasoUp(i) {
+      if (i <= 0) return;
+      [this.pasos[i - 1], this.pasos[i]] = [this.pasos[i], this.pasos[i - 1]];
+    },
+    movePasoDown(i) {
+      if (i >= this.pasos.length - 1) return;
+      [this.pasos[i + 1], this.pasos[i]] = [this.pasos[i], this.pasos[i + 1]];
+    },
     get step4Valid() { return true; },
     get step5Valid() { return true; },
 
@@ -88,7 +116,7 @@ document.addEventListener('alpine:init', () => {
       const msgs = {
         1: 'Necesitas un nombre (mín. 2 letras) y al menos 1 porción. 🧁',
         2: 'Agrega al menos un ingrediente con cantidad mayor a 0. 🥣',
-        3: 'Escribe las instrucciones de preparación. 👩‍🍳',
+        3: 'Agrega al menos un paso de preparación con texto. 👩‍🍳',
       };
       alert(msgs[this.step] || 'Revisa los datos del paso actual.');
     },
@@ -145,11 +173,9 @@ document.addEventListener('alpine:init', () => {
     },
 
     get listaPasos() {
-      const txt = (this.instrucciones || '').trim();
-      if (!txt) return [];
-      return txt.split(/\r?\n/)
-                .map(l => l.replace(/^\s*\d+[.)]\s*/, '').trim())
-                .filter(l => l.length > 0);
+      return this.pasos
+        .map(p => p.texto.trim())
+        .filter(t => t.length > 0);
     },
 
     get itemsJson() {
