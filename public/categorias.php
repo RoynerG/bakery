@@ -55,12 +55,30 @@ if ($accion === 'editar' && $id > 0) {
 
 $categorias = Categoria::all();
 $titulo = 'Categorías';
+
+// Determinar a qué página volver: si llegamos desde notas.php
+// o agenda.php, usamos esa como "atrás"; si no, vamos a notas.php.
+$volver = 'notas.php';
+$ref = $_SERVER['HTTP_REFERER'] ?? '';
+if ($ref !== '' && (strpos($ref, 'agenda.php') !== false || strpos($ref, 'categorias.php') === false && strpos($ref, 'notas.php') !== false)) {
+    // si la URL anterior contiene 'agenda.php' usamos agenda
+    if (strpos($ref, 'agenda.php') !== false) {
+        $volver = 'agenda.php';
+    }
+}
+// Si vinimos con un ?volver= explicito, ese gana
+if (isset($_GET['volver']) && in_array($_GET['volver'], ['notas.php', 'agenda.php'], true)) {
+    $volver = $_GET['volver'];
+}
 ?>
 <?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
 <!-- HEADER -->
 <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
   <div>
+    <a href="<?= url($volver) ?>" class="text-sm text-chocolate-700 hover:text-rose-500 font-semibold inline-flex items-center gap-1 mb-2">
+      <span>←</span> Volver a <?= $volver === 'agenda.php' ? 'Agenda' : 'Notas' ?>
+    </a>
     <h1 class="section-title">🏷️ Categorías</h1>
     <p class="text-chocolate-700 mt-2">
       Crea etiquetas con emoji para clasificar tus notas y eventos.
@@ -110,7 +128,7 @@ $titulo = 'Categorías';
         <button type="submit" class="btn btn-primary">
           <span>💾</span> <?= $accion === 'crear' ? 'Guardar' : 'Actualizar' ?>
         </button>
-        <a href="<?= url('categorias.php') ?>" class="btn btn-ghost">Cancelar</a>
+        <a href="<?= url('categorias.php') ?>" class="btn btn-ghost">← Volver al listado</a>
       </div>
     </form>
   </section>
