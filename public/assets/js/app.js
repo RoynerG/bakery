@@ -22,9 +22,12 @@ document.addEventListener('alpine:init', () => {
         Alpine.store('ui').categoriasOpen = true;
       }
     } catch (e) { /* sigue al fallback */ }
-    // Fallback puro DOM
+    // Fallback puro DOM (con important para ganar a [x-cloak] si existiera)
     var m = document.getElementById('categorias-modal');
-    if (m) { m.classList.add('show'); m.style.display = 'flex'; }
+    if (m) {
+      m.classList.add('show');
+      m.style.setProperty('display', 'flex', 'important');
+    }
   };
   window.cerrarCategorias = function () {
     try {
@@ -33,7 +36,10 @@ document.addEventListener('alpine:init', () => {
       }
     } catch (e) { /* sigue al fallback */ }
     var m = document.getElementById('categorias-modal');
-    if (m) { m.classList.remove('show'); m.style.display = 'none'; }
+    if (m) {
+      m.classList.remove('show');
+      m.style.setProperty('display', 'none', 'important');
+    }
   };
 
   // ----- confirmDelete -----

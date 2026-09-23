@@ -3,7 +3,7 @@
    Complementa a Tailwind CSS
    ============================================ */
 
-[x-cloak] { display: none !important; }
+[x-cloak] { display: none; }
 html { scroll-behavior: smooth; }
 
 /* ---------- Inputs reposteros ---------- */

@@ -56,13 +56,13 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- App JS (define componentes Alpine.js: recipeWizard, confirmDelete) -->
-  <script defer src="<?= asset('js/app.js') ?>?v=4"></script>
+  <script defer src="<?= asset('js/app.js') ?>?v=5"></script>
 
   <!-- Alpine.js -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>">
+  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=2">
 
   <!-- Favicon: preferimos el logo real si existe, fallback al cupcake SVG -->
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">
