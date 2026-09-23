@@ -66,7 +66,8 @@ $categorias = Categoria::all();
     <p class="text-chocolate-700 mt-2">Tus pedidos, entregas y eventos importantes. 📅</p>
   </div>
   <div class="flex gap-2">
-    <button type="button" onclick="window.abrirCategorias(); return false;"
+    <button type="button"
+            onclick="var m=document.getElementById('categorias-modal'); if(m){m.classList.add('open');} return false;"
             class="btn btn-secondary">
       <span>🏷️</span> Categorías
     </button>
@@ -181,7 +182,8 @@ $categorias = Categoria::all();
           <?php endforeach; ?>
         </div>
         <p class="text-xs text-chocolate-500 mt-2">
-          ¿No encuentras una? <button type="button" onclick="window.abrirCategorias(); return false;"
+          ¿No encuentras una? <button type="button"
+                                       onclick="var m=document.getElementById('categorias-modal'); if(m){m.classList.add('open');} return false;"
                                        class="text-rose-500 font-bold underline">Gestionar categorías</button>
         </p>
       </div>
@@ -340,11 +342,13 @@ document.addEventListener('alpine:init', () => {
   <div x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
     'id' => (int)$c['id'], 'emoji' => $c['emoji'], 'nombre' => $c['nombre']
 ], $categorias)), ENT_QUOTES, 'UTF-8') ?>)"
-       @click.outside="window.cerrarCategorias()"
+       @click.outside="var m=document.getElementById('categorias-modal'); if(m){m.classList.remove('open');}"
        class="card max-w-lg w-full p-6 animate-pop max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
       <h3 class="font-sweet text-2xl text-rose-500">🏷️ Categorías</h3>
-      <button type="button" onclick="window.cerrarCategorias(); return false;" class="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 flex items-center justify-center">✕</button>
+      <button type="button"
+              onclick="var m=document.getElementById('categorias-modal'); if(m){m.classList.remove('open');} return false;"
+              class="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 flex items-center justify-center">✕</button>
     </div>
     <p class="text-sm text-chocolate-500 mb-4">
       Crea etiquetas con emoji para clasificar tus notas.

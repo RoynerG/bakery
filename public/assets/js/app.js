@@ -360,18 +360,14 @@ document.addEventListener('alpine:init', () => {
           return str + ' ' + unidad + plur;
         },
 
-        submit: async function (form) {
+        submit: function (form) {
           if (!this.step1Valid || !this.step2Valid || !this.step3Valid) {
             this.step = !this.step1Valid ? 1 : (!this.step2Valid ? 2 : 3);
             this.warnStep();
             return;
           }
-          this.submitting = true;
-          for (var i = 0; i < this.loadMsgs.length; i++) {
-            this.loadingMsg = this.loadMsgs[i];
-            this.progress = Math.round(((i + 1) / this.loadMsgs.length) * 100);
-            await new Promise(function (r) { return setTimeout(r, 550); });
-          }
+          // Submit directo, sin loading artificial. Asi si algo
+          // falla, el navegador maneja el redirect normalmente.
           form.submit();
         }
       };
