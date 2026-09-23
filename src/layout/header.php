@@ -56,7 +56,7 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- App JS (define componentes Alpine.js: recipeWizard, confirmDelete) -->
-  <script defer src="<?= asset('js/app.js') ?>?v=2"></script>
+  <script defer src="<?= asset('js/app.js') ?>?v=3"></script>
 
   <!-- Alpine.js -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

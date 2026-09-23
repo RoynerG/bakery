@@ -5,6 +5,14 @@
 
 document.addEventListener('alpine:init', () => {
 
+  // ----- Estado UI global (compartido entre paginas) -----
+  // Se inicializa aqui para que SIEMPRE este disponible,
+  // independientemente de si la pagina tiene su propio script
+  // de inicializacion (que ademas podria estar cacheado).
+  Alpine.store('ui', {
+    categoriasOpen: new URLSearchParams(location.search).get('modal') === 'categorias'
+  });
+
   // ----- confirmDelete -----
   Alpine.data('confirmDelete', (message = 'Estas seguro?') => ({
     message,
