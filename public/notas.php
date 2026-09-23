@@ -96,7 +96,7 @@ $titulo    = 'Notas';
     <p class="text-chocolate-700 mt-2">Anota ideas, pendientes y secretos de la cocina. 📝</p>
   </div>
   <div class="flex gap-2">
-    <button type="button" @click="$store.ui.categoriasOpen = true"
+    <button type="button" onclick="window.abrirCategorias(); return false;"
             class="btn btn-secondary">
       <span>🏷️</span> Categorías
     </button>
@@ -153,7 +153,7 @@ $titulo    = 'Notas';
           <?php endforeach; ?>
         </div>
         <p class="text-xs text-chocolate-500 mt-2">
-          ¿No encuentras una? <button type="button" @click="$store.ui.categoriasOpen = true"
+          ¿No encuentras una? <button type="button" onclick="window.abrirCategorias(); return false;"
                                        class="text-rose-500 font-bold underline">Gestionar categorías</button>
         </p>
       </div>
@@ -216,19 +216,20 @@ $titulo    = 'Notas';
 <?php endif; ?>
 
 <!-- ============ MODAL DE CATEGORÍAS ============ -->
-<div x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
+<div id="categorias-modal"
+     x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
     'id' => (int)$c['id'], 'emoji' => $c['emoji'], 'nombre' => $c['nombre']
 ], $categorias)), ENT_QUOTES, 'UTF-8') ?>)"
      x-show="$store.ui.categoriasOpen"
-     @keydown.escape.window="$store.ui.categoriasOpen = false"
+     @keydown.escape.window="window.cerrarCategorias()"
      x-cloak
-     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+     class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
      style="display:none;">
-  <div @click.outside="$store.ui.categoriasOpen = false"
+  <div @click.outside="window.cerrarCategorias()"
        class="card max-w-lg w-full p-6 animate-pop max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
       <h3 class="font-sweet text-2xl text-rose-500">🏷️ Categorías</h3>
-      <button @click="$store.ui.categoriasOpen = false" class="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 flex items-center justify-center">✕</button>
+      <button type="button" onclick="window.cerrarCategorias(); return false;" class="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 flex items-center justify-center">✕</button>
     </div>
     <p class="text-sm text-chocolate-500 mb-4">
       Crea etiquetas con emoji para clasificar tus notas.
