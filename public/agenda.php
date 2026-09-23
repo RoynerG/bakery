@@ -9,6 +9,7 @@ require_once __DIR__ . '/../src/bootstrap.php';
 require_once __DIR__ . '/../src/helpers.php';
 
 use App\Models\Agenda;
+use App\Models\Categoria;
 use App\Auth;
 
 Auth::require();
@@ -53,6 +54,8 @@ if ($accion === 'editar' && $id > 0) {
 }
 
 $titulo = 'Agenda';
+
+$categorias = Categoria::all();
 ?>
 <?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
@@ -63,6 +66,10 @@ $titulo = 'Agenda';
     <p class="text-chocolate-700 mt-2">Tus pedidos, entregas y eventos importantes. 📅</p>
   </div>
   <div class="flex gap-2">
+    <button type="button" @click="$store.ui.categoriasOpen = true"
+            class="btn btn-secondary">
+      <span>🏷️</span> Categorías
+    </button>
     <a href="<?= url('agenda.php?accion=calendario') ?>"
        class="btn <?= $accion === 'calendario' ? 'btn-primary' : 'btn-secondary' ?>">
       <span>📅</span> Calendario
@@ -299,6 +306,93 @@ document.addEventListener('alpine:init', () => {
       };
       return m[color] || '#ffd6e7';
     }
+  }));
+});
+</script>
+
+<!-- ============ MODAL DE CATEGORÍAS (compartido con notas.php) ============ -->
+<div x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
+    'id' => (int)$c['id'], 'emoji' => $c['emoji'], 'nombre' => $c['nombre']
+], $categorias)), ENT_QUOTES, 'UTF-8') ?>)"
+     x-show="$store.ui.categoriasOpen"
+     @keydown.escape.window="$store.ui.categoriasOpen = false"
+     x-cloak
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+     style="display:none;">
+  <div @click.outside="$store.ui.categoriasOpen = false"
+       class="card max-w-lg w-full p-6 animate-pop max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-sweet text-2xl text-rose-500">🏷️ Categorías</h3>
+      <button @click="$store.ui.categoriasOpen = false" class="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 flex items-center justify-center">✕</button>
+    </div>
+    <p class="text-sm text-chocolate-500 mb-4">
+      Crea etiquetas con emoji para clasificar tus notas.
+    </p>
+
+    <form method="post" action="<?= url('notas.php') ?>" class="flex gap-2 mb-5 p-3 bg-rose-50/60 rounded-2xl">
+      <?= csrf_field() ?>
+      <input type="hidden" name="tipo" value="categoria">
+      <input type="hidden" name="cat_accion" value="crear">
+      <input type="text" name="emoji" maxlength="8" required
+             placeholder="🍰" class="w-16 text-center text-xl">
+      <input type="text" name="nombre" maxlength="60" required
+             placeholder="Nombre de la categoría"
+             class="flex-1 px-3 py-2 rounded-xl border-2 border-rose-100 focus:border-rose-400 focus:outline-none">
+      <button type="submit" class="btn btn-primary !py-2 !px-4">＋</button>
+    </form>
+
+    <div class="space-y-2">
+      <template x-for="cat in lista" :key="cat.id">
+        <div class="flex items-center gap-2 p-3 bg-white rounded-2xl border-2 border-rose-100">
+          <span class="text-2xl w-10 text-center" x-text="cat.emoji"></span>
+          <input type="text" x-model="cat.emoji" maxlength="8"
+                 class="w-12 text-center px-1 py-1 rounded-lg border border-rose-100">
+          <input type="text" x-model="cat.nombre" maxlength="60"
+                 class="flex-1 px-3 py-1 rounded-lg border border-rose-100">
+          <button type="button" @click="guardar(cat)"
+                  class="nota-icon-btn" title="Guardar">💾</button>
+          <button type="button" @click="eliminar(cat)"
+                  class="nota-icon-btn" title="Eliminar">🗑️</button>
+        </div>
+      </template>
+      <template x-if="lista.length === 0">
+        <p class="text-center text-chocolate-500 py-4">No tienes categorías. Crea la primera arriba.</p>
+      </template>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+  if (!Alpine.store('ui')) {
+    Alpine.store('ui', { categoriasOpen: false });
+  }
+
+  Alpine.data('categoriasModal', (inicial = []) => ({
+    lista: inicial,
+    async guardar(cat) {
+      const fd = new FormData();
+      const csrf = document.querySelector('input[name=_csrf]');
+      if (csrf) fd.append('_csrf', csrf.value);
+      fd.append('tipo',       'categoria');
+      fd.append('cat_accion', 'editar');
+      fd.append('id',         cat.id);
+      fd.append('emoji',      cat.emoji);
+      fd.append('nombre',     cat.nombre);
+      const r = await fetch('notas.php', { method: 'POST', body: fd });
+      if (r.ok) location.reload();
+    },
+    async eliminar(cat) {
+      if (!confirm('¿Eliminar la categoría "' + cat.nombre + '"?\n\nLas notas que la usan quedarán sin categoría.')) return;
+      const fd = new FormData();
+      const csrf = document.querySelector('input[name=_csrf]');
+      if (csrf) fd.append('_csrf', csrf.value);
+      fd.append('tipo',       'categoria');
+      fd.append('cat_accion', 'eliminar');
+      fd.append('id',         cat.id);
+      const r = await fetch('notas.php', { method: 'POST', body: fd });
+      if (r.ok) location.reload();
+    },
   }));
 });
 </script>
