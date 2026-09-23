@@ -23,6 +23,13 @@ final class Usuario
         return self::count() > 0;
     }
 
+    public static function all(): array
+    {
+        return Database::getInstance()->fetchAll(
+            'SELECT * FROM usuarios ORDER BY created_at ASC, id ASC'
+        );
+    }
+
     public static function findByUsuario(string $usuario): ?array
     {
         return Database::getInstance()->fetchOne(
@@ -87,5 +94,44 @@ final class Usuario
             'UPDATE usuarios SET password_hash = ? WHERE id = ?',
             [$hash, $id]
         );
+    }
+
+    /**
+     * Actualiza datos del usuario (nombre y, opcionalmente, contraseña).
+     */
+    public static function update(int $id, ?string $nombre, ?string $newPassword = null): bool
+    {
+        $params = [];
+        $sets   = [];
+
+        if ($nombre !== null) {
+            $sets[]   = 'nombre = ?';
+            $params[] = trim($nombre) !== '' ? trim($nombre) : null;
+        }
+        if ($newPassword !== null && $newPassword !== '') {
+            if (mb_strlen($newPassword) < 6) {
+                throw new \InvalidArgumentException('La contraseña debe tener al menos 6 caracteres.');
+            }
+            $sets[]   = 'password_hash = ?';
+            $params[] = password_hash($newPassword, PASSWORD_BCRYPT);
+        }
+
+        if (empty($sets)) {
+            return false;
+        }
+
+        $params[] = $id;
+        $sql = 'UPDATE usuarios SET ' . implode(', ', $sets) . ' WHERE id = ?';
+        $affected = Database::getInstance()->execute($sql, $params)->rowCount();
+        return $affected > 0;
+    }
+
+    public static function delete(int $id): bool
+    {
+        $affected = Database::getInstance()->execute(
+            'DELETE FROM usuarios WHERE id = ?',
+            [$id]
+        )->rowCount();
+        return $affected > 0;
     }
 }

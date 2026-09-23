@@ -119,12 +119,23 @@ $current = basename($_SERVER['SCRIPT_NAME']);
         <!-- Usuario / login (desktop) -->
         <div class="hidden md:flex items-center gap-2 ml-2">
           <?php if (\App\Auth::check()): ?>
-            <span class="text-sm text-chocolate-700 font-semibold flex items-center gap-2">
+            <a href="<?= url('index.php') ?>" class="flex items-center gap-2 group">
               <span class="w-8 h-8 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center text-sm font-bold">
                 <?= e(mb_substr(\App\Auth::displayName(), 0, 1)) ?>
               </span>
-              <?= e(\App\Auth::displayName()) ?>
-            </span>
+              <span class="text-sm text-chocolate-700 font-semibold group-hover:text-rose-500 transition-colors">
+                <?= e(\App\Auth::displayName()) ?>
+              </span>
+            </a>
+            <a href="<?= url('usuarios.php') ?>"
+               class="w-9 h-9 rounded-full bg-rose-50 hover:bg-rose-100 text-chocolate-700 hover:text-rose-500 transition-all flex items-center justify-center"
+               title="Gestionar usuarios">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </a>
             <a href="<?= url('logout.php') ?>"
                class="px-3 py-2 rounded-full font-semibold text-sm text-chocolate-700 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center gap-1"
                title="Cerrar sesión">
@@ -157,9 +168,15 @@ $current = basename($_SERVER['SCRIPT_NAME']);
           <?php endforeach; ?>
           <div class="border-t border-rose-100 my-1"></div>
           <?php if (\App\Auth::check()): ?>
-            <div class="px-4 py-2 text-sm text-chocolate-700">
-              👤 <?= e(\App\Auth::displayName()) ?>
+            <div class="px-4 py-2 text-sm text-chocolate-700 flex items-center gap-2">
+              <span class="w-8 h-8 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center text-sm font-bold">
+                <?= e(mb_substr(\App\Auth::displayName(), 0, 1)) ?>
+              </span>
+              <?= e(\App\Auth::displayName()) ?>
             </div>
+            <a href="<?= url('usuarios.php') ?>" class="block px-4 py-3 rounded-2xl hover:bg-rose-50 font-semibold flex items-center gap-2">
+              <span>⚙️</span> Gestionar usuarios
+            </a>
             <a href="<?= url('logout.php') ?>" class="block px-4 py-3 rounded-2xl hover:bg-rose-50 font-semibold flex items-center gap-2">
               <span>🚪</span> Salir
             </a>
