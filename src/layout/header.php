@@ -55,6 +55,9 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- App JS (define componentes Alpine.js: recipeWizard, confirmDelete) -->
+  <script defer src="<?= asset('js/app.js') ?>"></script>
+
   <!-- Alpine.js -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -111,6 +114,28 @@ $current = basename($_SERVER['SCRIPT_NAME']);
           <?php endforeach; ?>
         </div>
 
+        <!-- Usuario / login (desktop) -->
+        <div class="hidden md:flex items-center gap-2 ml-2">
+          <?php if (\App\Auth::check()): ?>
+            <span class="text-sm text-chocolate-700 font-semibold flex items-center gap-2">
+              <span class="w-8 h-8 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center text-sm font-bold">
+                <?= e(mb_substr(\App\Auth::displayName(), 0, 1)) ?>
+              </span>
+              <?= e(\App\Auth::displayName()) ?>
+            </span>
+            <a href="<?= url('logout.php') ?>"
+               class="px-3 py-2 rounded-full font-semibold text-sm text-chocolate-700 hover:bg-rose-50 hover:text-rose-500 transition-all flex items-center gap-1"
+               title="Cerrar sesión">
+              <span>🚪</span> Salir
+            </a>
+          <?php else: ?>
+            <a href="<?= url('login.php') ?>"
+               class="px-4 py-2 rounded-full font-semibold text-sm bg-rose-400 hover:bg-rose-500 text-white shadow-md transition-all flex items-center gap-1">
+              <span>🔑</span> Entrar
+            </a>
+          <?php endif; ?>
+        </div>
+
         <!-- Menú móvil -->
         <button x-data="{open:false}" @click="open=!open" class="md:hidden p-2 rounded-full hover:bg-rose-50">
           <svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,6 +153,19 @@ $current = basename($_SERVER['SCRIPT_NAME']);
               <span><?= $icon ?></span><?= e($label) ?>
             </a>
           <?php endforeach; ?>
+          <div class="border-t border-rose-100 my-1"></div>
+          <?php if (\App\Auth::check()): ?>
+            <div class="px-4 py-2 text-sm text-chocolate-700">
+              👤 <?= e(\App\Auth::displayName()) ?>
+            </div>
+            <a href="<?= url('logout.php') ?>" class="block px-4 py-3 rounded-2xl hover:bg-rose-50 font-semibold flex items-center gap-2">
+              <span>🚪</span> Salir
+            </a>
+          <?php else: ?>
+            <a href="<?= url('login.php') ?>" class="block px-4 py-3 rounded-2xl bg-rose-400 text-white font-semibold flex items-center gap-2">
+              <span>🔑</span> Entrar
+            </a>
+          <?php endif; ?>
         </div>
       </div>
     </nav>

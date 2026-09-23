@@ -15,6 +15,10 @@ require_once __DIR__ . '/../src/helpers.php';
 
 use App\Models\Receta;
 use App\Models\Ingrediente;
+use App\Auth;
+
+// Crear/editar recetas requiere autenticación
+Auth::require();
 
 $recetaId  = isset($_GET['editar']) ? (int)$_GET['editar'] : 0;
 $esEdicion = $recetaId > 0;

@@ -12,18 +12,37 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------------------------------------
--- Tabla: ingredientes
+-- Limpieza previa (orden importa por las FK)
 -- ----------------------------------------------------------
 DROP TABLE IF EXISTS `receta_ingredientes`;
 DROP TABLE IF EXISTS `recetas`;
 DROP TABLE IF EXISTS `ingredientes`;
+DROP TABLE IF EXISTS `usuarios`;
 
+-- ----------------------------------------------------------
+-- Tabla: usuarios (autenticación)
+-- ----------------------------------------------------------
+CREATE TABLE `usuarios` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `usuario`       VARCHAR(60) NOT NULL,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `nombre`        VARCHAR(120) DEFAULT NULL,
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_login_at` DATETIME DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_usuario` (`usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: ingredientes
+-- ----------------------------------------------------------
 CREATE TABLE `ingredientes` (
   `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nombre`        VARCHAR(120) NOT NULL,
   `unidad_medida` ENUM('kilo','litro','pieza','gramo','mililitro') NOT NULL DEFAULT 'pieza',
   `costo_base`    DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
   `notas`         VARCHAR(255) DEFAULT NULL,
+  `imagen`        VARCHAR(255) DEFAULT NULL,
   `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -70,7 +89,7 @@ CREATE TABLE `receta_ingredientes` (
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ==========================================================
--- Datos iniciales de ejemplo (opcional)
+-- Datos iniciales de ejemplo
 -- ==========================================================
 INSERT INTO `ingredientes` (`nombre`, `unidad_medida`, `costo_base`, `notas`) VALUES
   ('Harina de trigo',          'kilo',   28.50, 'Para pasteles y galletas'),

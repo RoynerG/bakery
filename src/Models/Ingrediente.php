@@ -10,6 +10,8 @@ use App\Database;
  *
  * Unidad de medida válida: kilo, litro, pieza, gramo, mililitro.
  * costo_base = costo por 1 unidad de medida.
+ *
+ * A partir de v1.1 cada ingrediente puede tener una imagen opcional.
  */
 final class Ingrediente
 {
@@ -30,49 +32,92 @@ final class Ingrediente
         );
     }
 
-    public static function create(array $data): int
+    /**
+     * Crea un ingrediente con su imagen opcional.
+     *
+     * @param array  $data           cabecera: nombre, unidad_medida, costo_base, notas
+     * @param string|null $imagenFilename nombre ya subido a /uploads (o null)
+     */
+    public static function create(array $data, ?string $imagenFilename): int
     {
         self::validate($data);
         $db = Database::getInstance();
         $db->execute(
-            'INSERT INTO ingredientes (nombre, unidad_medida, costo_base, notas)
-             VALUES (?, ?, ?, ?)',
+            'INSERT INTO ingredientes (nombre, unidad_medida, costo_base, notas, imagen)
+             VALUES (?, ?, ?, ?, ?)',
             [
                 trim($data['nombre']),
                 $data['unidad_medida'],
                 (float)$data['costo_base'],
                 isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
+                $imagenFilename,
             ]
         );
         return (int)$db->lastInsertId();
     }
 
-    public static function update(int $id, array $data): bool
+    /**
+     * Actualiza un ingrediente.
+     *
+     * @param array  $data
+     * @param string|null $imagenFilename   nuevo archivo (si se subió uno)
+     * @param bool   $reemplazarImagen      true si se debe actualizar la imagen
+     */
+    public static function update(int $id, array $data, ?string $imagenFilename, bool $reemplazarImagen): bool
     {
         self::validate($data);
-        $affected = Database::getInstance()->execute(
-            'UPDATE ingredientes
-                SET nombre = ?, unidad_medida = ?, costo_base = ?, notas = ?,
-                    updated_at = CURRENT_TIMESTAMP
-              WHERE id = ?',
-            [
-                trim($data['nombre']),
-                $data['unidad_medida'],
-                (float)$data['costo_base'],
-                isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
-                $id,
-            ]
-        )->rowCount();
+
+        if ($reemplazarImagen) {
+            $affected = Database::getInstance()->execute(
+                'UPDATE ingredientes
+                    SET nombre = ?, unidad_medida = ?, costo_base = ?, notas = ?,
+                        imagen = ?, updated_at = CURRENT_TIMESTAMP
+                  WHERE id = ?',
+                [
+                    trim($data['nombre']),
+                    $data['unidad_medida'],
+                    (float)$data['costo_base'],
+                    isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
+                    $imagenFilename,
+                    $id,
+                ]
+            )->rowCount();
+
+            // Borrar imagen anterior si estamos reemplazando
+            $anterior = self::find($id);
+            if ($anterior && !empty($anterior['imagen']) && $anterior['imagen'] !== $imagenFilename) {
+                self::borrarImagen($anterior['imagen']);
+            }
+        } else {
+            $affected = Database::getInstance()->execute(
+                'UPDATE ingredientes
+                    SET nombre = ?, unidad_medida = ?, costo_base = ?, notas = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                  WHERE id = ?',
+                [
+                    trim($data['nombre']),
+                    $data['unidad_medida'],
+                    (float)$data['costo_base'],
+                    isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
+                    $id,
+                ]
+            )->rowCount();
+        }
         return $affected > 0;
     }
 
     public static function delete(int $id): bool
     {
         try {
+            $anterior = self::find($id);
             $affected = Database::getInstance()->execute(
                 'DELETE FROM ingredientes WHERE id = ?',
                 [$id]
             )->rowCount();
+
+            if ($affected > 0 && $anterior && !empty($anterior['imagen'])) {
+                self::borrarImagen($anterior['imagen']);
+            }
             return $affected > 0;
         } catch (\PDOException $e) {
             // Si tiene recetas asociadas, RESTRICT impide el borrado
@@ -109,5 +154,11 @@ final class Ingrediente
             'mililitro'              => 0.001,
             default                  => 1.0,
         };
+    }
+
+    private static function borrarImagen(string $filename): void
+    {
+        $path = UPLOADS_PATH . '/' . basename($filename);
+        if (is_file($path)) @unlink($path);
     }
 }

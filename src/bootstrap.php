@@ -21,25 +21,27 @@ spl_autoload_register(function (string $class) {
     if (is_file($file)) require_once $file;
 });
 
-// 4. Asegurar que la base de datos exista (sólo SQLite)
-if (DB_DRIVER === 'sqlite' && !file_exists(SQLITE_PATH)) {
-    @touch(SQLITE_PATH);
-}
-
-// 5. Disparar el instalador si la BD no tiene tablas (solo SQLite)
+// 4. Disparar el instalador si la BD no tiene tablas (ambos drivers)
 try {
+    $db = App\Database::getInstance();
+
     if (DB_DRIVER === 'sqlite') {
-        $db = App\Database::getInstance();
-        $exists = $db->fetchColumn("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='ingredientes'");
-        if (!$exists) {
-            // La primera carga ejecutará install.php automáticamente
-            if (is_file(__DIR__ . '/../install.php')) {
-                require_once __DIR__ . '/../install.php';
-            }
-        }
+        $exists = $db->fetchColumn(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='ingredientes'"
+        );
+    } elseif (DB_DRIVER === 'mysql') {
+        $exists = $db->fetchColumn(
+            "SELECT COUNT(*) FROM information_schema.tables
+              WHERE table_schema = ? AND table_name = 'ingredientes'",
+            [DB_NAME]
+        );
+    } else {
+        $exists = 1;
     }
-    // Para MySQL se asume que el usuario importó database/schema.mysql.sql
-    // desde el panel (phpMyAdmin / Hostinger).
+
+    if (!$exists && is_file(__DIR__ . '/../install.php')) {
+        require_once __DIR__ . '/../install.php';
+    }
 } catch (Throwable $e) {
     // Silenciar: la página mostrará el mensaje si lo requiere
 }

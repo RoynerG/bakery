@@ -113,7 +113,15 @@ $titulo = $receta['nombre'];
         <?php foreach ($receta['ingredientes'] as $ri): ?>
           <tr>
             <td>
-              <span class="font-semibold text-chocolate-900"><?= e($ri['nombre']) ?></span>
+              <div class="flex items-center gap-3">
+                <?php if (!empty($ri['imagen'])): ?>
+                  <img src="<?= upload_url($ri['imagen']) ?>" alt="<?= e($ri['nombre']) ?>"
+                       class="h-10 w-10 rounded-lg object-cover border border-rose-100">
+                <?php else: ?>
+                  <div class="h-10 w-10 rounded-lg bg-rose-50 flex items-center justify-center text-lg border border-rose-100">🧂</div>
+                <?php endif; ?>
+                <span class="font-semibold text-chocolate-900"><?= e($ri['nombre']) ?></span>
+              </div>
             </td>
             <td>
               <span class="badge"><?= format_unidad($ri['unidad_medida'], (float)$ri['cantidad']) ?></span>

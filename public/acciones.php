@@ -11,6 +11,10 @@ require_once __DIR__ . '/../src/helpers.php';
 
 use App\Models\Receta;
 use App\Models\Ingrediente;
+use App\Auth;
+
+// Toda acción requiere autenticación
+Auth::require();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect('index.php');

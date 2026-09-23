@@ -42,7 +42,7 @@ final class Receta
     {
         return Database::getInstance()->fetchAll(
             'SELECT ri.id, ri.ingrediente_id, ri.cantidad, ri.subtotal,
-                    i.nombre, i.unidad_medida, i.costo_base
+                    i.nombre, i.unidad_medida, i.costo_base, i.imagen
                FROM receta_ingredientes ri
                JOIN ingredientes i ON i.id = ri.ingrediente_id
               WHERE ri.receta_id = ?

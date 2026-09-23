@@ -1,7 +1,7 @@
 <?php
 /**
  * Página: Inventario de Insumos
- * CRUD completo: listar, crear, editar y eliminar ingredientes.
+ * CRUD completo: listar, crear, editar y eliminar ingredientes (con imagen opcional).
  */
 declare(strict_types=1);
 
@@ -9,6 +9,10 @@ require_once __DIR__ . '/../src/bootstrap.php';
 require_once __DIR__ . '/../src/helpers.php';
 
 use App\Models\Ingrediente;
+use App\Auth;
+
+// Toda la página de inventario requiere autenticación
+Auth::require();
 
 $accion = $_GET['accion'] ?? 'listar';
 $id     = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -18,12 +22,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     try {
         if ($accion === 'crear') {
-            $nuevo = Ingrediente::create($_POST);
+            $up = handle_upload('imagen');
+            if (!$up['ok']) {
+                throw new RuntimeException($up['error'] ?? 'Error al subir la imagen.');
+            }
+            $nuevo = Ingrediente::create($_POST, $up['filename'] ?? null);
             flash('success', '🎉 Ingrediente "' . $_POST['nombre'] . '" agregado.');
             redirect('inventario.php');
         }
         if ($accion === 'editar' && $id > 0) {
-            Ingrediente::update($id, $_POST);
+            $up = handle_upload('imagen');
+            if (!$up['ok']) {
+                throw new RuntimeException($up['error'] ?? 'Error al subir la imagen.');
+            }
+            $hayNueva = ($up['filename'] ?? null) !== null;
+            Ingrediente::update($id, $_POST, $up['filename'] ?? null, $hayNueva);
             flash('success', '✅ Ingrediente actualizado.');
             redirect('inventario.php');
         }
@@ -73,10 +86,13 @@ $titulo = 'Inventario';
     <h2 class="font-sweet text-2xl text-rose-500 mb-1">
       <?= $accion === 'crear' ? 'Nuevo ingrediente' : 'Editar ingrediente' ?>
     </h2>
-    <p class="text-sm text-chocolate-500 mb-6">Todos los campos son obligatorios.</p>
+    <p class="text-sm text-chocolate-500 mb-6">
+      <?= $accion === 'crear' ? 'Todos los campos son obligatorios.' : 'Edita los datos. La imagen es opcional.' ?>
+    </p>
 
     <form method="post"
           action="<?= url('inventario.php?accion=' . $accion . ($id ? '&id=' . $id : '')) ?>"
+          enctype="multipart/form-data"
           class="space-y-5">
       <?= csrf_field() ?>
 
@@ -128,6 +144,24 @@ $titulo = 'Inventario';
                placeholder="Marca, proveedor, descripción...">
       </div>
 
+      <div>
+        <label class="block text-sm font-bold text-chocolate-700 mb-1">
+          Imagen <span class="text-chocolate-500 font-normal">(opcional, JPG/PNG/WebP/GIF, máx 5 MB)</span>
+        </label>
+
+        <?php if (!empty($ingredienteEditar['imagen'])): ?>
+          <div class="mb-3 flex items-center gap-3">
+            <img src="<?= upload_url($ingredienteEditar['imagen']) ?>"
+                 alt="<?= e($ingredienteEditar['nombre']) ?>"
+                 class="h-16 w-16 rounded-xl object-cover border-2 border-rose-100">
+            <span class="text-xs text-chocolate-500">Imagen actual. Sube una nueva para reemplazarla.</span>
+          </div>
+        <?php endif; ?>
+
+        <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp,image/gif"
+               class="block w-full text-sm text-chocolate-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-rose-100 file:text-rose-700 file:font-semibold hover:file:bg-rose-200">
+      </div>
+
       <div class="flex flex-wrap gap-3 pt-2">
         <button type="submit" class="btn btn-primary">
           <span>💾</span> <?= $accion === 'crear' ? 'Guardar ingrediente' : 'Actualizar' ?>
@@ -153,6 +187,7 @@ $titulo = 'Inventario';
       <table class="sweet-table">
         <thead>
           <tr>
+            <th class="w-20">Imagen</th>
             <th>Ingrediente</th>
             <th>Unidad</th>
             <th>Costo / unidad</th>
@@ -164,10 +199,15 @@ $titulo = 'Inventario';
           <?php foreach ($ingredientes as $ing): ?>
             <tr>
               <td>
-                <div class="flex items-center gap-3">
-                  <span class="text-2xl">🧂</span>
-                  <span class="font-semibold text-chocolate-900"><?= e($ing['nombre']) ?></span>
-                </div>
+                <?php if (!empty($ing['imagen'])): ?>
+                  <img src="<?= upload_url($ing['imagen']) ?>" alt="<?= e($ing['nombre']) ?>"
+                       class="h-12 w-12 rounded-xl object-cover border-2 border-rose-100">
+                <?php else: ?>
+                  <div class="h-12 w-12 rounded-xl bg-rose-50 flex items-center justify-center text-2xl border-2 border-rose-100">🧂</div>
+                <?php endif; ?>
+              </td>
+              <td>
+                <span class="font-semibold text-chocolate-900"><?= e($ing['nombre']) ?></span>
               </td>
               <td>
                 <span class="badge"><?= e($ing['unidad_medida']) ?></span>

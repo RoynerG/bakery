@@ -1,7 +1,19 @@
 -- ==========================================================
--- Esquema de Base de Datos: Repostería
+-- Esquema de Base de Datos: Dulce Rinconcito
 -- Compatible con: SQLite 3
 -- ==========================================================
+
+-- ----------------------------------------------------------
+-- Tabla: usuarios (autenticación)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usuarios (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  usuario        TEXT NOT NULL UNIQUE,
+  password_hash  TEXT NOT NULL,
+  nombre         TEXT,
+  created_at     TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_login_at  TEXT
+);
 
 -- ----------------------------------------------------------
 -- Tabla: ingredientes
@@ -13,6 +25,7 @@ CREATE TABLE IF NOT EXISTS ingredientes (
                 CHECK (unidad_medida IN ('kilo','litro','pieza','gramo','mililitro')),
   costo_base    REAL NOT NULL DEFAULT 0,
   notas         TEXT,
+  imagen        TEXT,
   created_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -53,7 +66,7 @@ CREATE INDEX IF NOT EXISTS idx_ri_receta      ON receta_ingredientes(receta_id);
 CREATE INDEX IF NOT EXISTS idx_ri_ingrediente ON receta_ingredientes(ingrediente_id);
 
 -- ==========================================================
--- Datos iniciales (opcional)
+-- Datos iniciales de ejemplo (opcional)
 -- ==========================================================
 INSERT INTO ingredientes (nombre, unidad_medida, costo_base, notas) VALUES
   ('Harina de trigo',       'kilo',   28.50, 'Para pasteles y galletas'),
