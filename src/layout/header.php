@@ -62,7 +62,7 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=3">
+  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=4">
 
   <!-- Favicon: preferimos el logo real si existe, fallback al cupcake SVG -->
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">

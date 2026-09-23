@@ -484,24 +484,8 @@ $titulo = $esEdicion ? 'Editar receta' : 'Nueva receta';
   <input type="hidden" name="ingredientes_json" :value="itemsJson">
 </form>
 
-<!-- ============ OVERLAY DE CARGA ============ -->
-<div x-show="submitting"
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="opacity-0"
-     x-transition:enter-end="opacity-100"
-     x-cloak
-     class="loading-overlay">
-  <span class="loading-orbit o1">🍪</span>
-  <span class="loading-orbit o2">🍩</span>
-  <span class="loading-orbit o3">🧁</span>
-  <span class="loading-orbit o4">🍰</span>
-  <div class="loading-cupcake">🧁</div>
-  <div class="loading-msg" x-text="loadingMsg">Precalentando...</div>
-  <div class="loading-bar">
-    <div class="loading-bar-fill" :style="`width: ${progress}%`"></div>
-  </div>
-  <div class="loading-percent" x-text="progress + '%'">0%</div>
-</div>
+<!-- OVERLAY DE CARGA: eliminado. recipeWizard.submit() hace
+     form.submit() directo, sin loading artificial (ver app.js). -->
 
 <?php clear_old(); ?>
 <?php require_once __DIR__ . '/../src/layout/footer.php'; ?>
