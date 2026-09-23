@@ -17,6 +17,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `receta_ingredientes`;
 DROP TABLE IF EXISTS `recetas`;
 DROP TABLE IF EXISTS `ingredientes`;
+DROP TABLE IF EXISTS `notas`;
+DROP TABLE IF EXISTS `agenda`;
 DROP TABLE IF EXISTS `usuarios`;
 
 -- ----------------------------------------------------------
@@ -84,6 +86,37 @@ CREATE TABLE `receta_ingredientes` (
   CONSTRAINT `fk_ri_ingrediente`
     FOREIGN KEY (`ingrediente_id`) REFERENCES `ingredientes` (`id`)
     ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: notas (bloc de notas del admin)
+-- ----------------------------------------------------------
+CREATE TABLE `notas` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titulo`     VARCHAR(180) NOT NULL,
+  `contenido`  TEXT NOT NULL,
+  `color`      ENUM('rosa','crema','menta','chocolate') NOT NULL DEFAULT 'rosa',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_updated` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: agenda (eventos / citas)
+-- ----------------------------------------------------------
+CREATE TABLE `agenda` (
+  `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titulo`      VARCHAR(180) NOT NULL,
+  `descripcion` TEXT,
+  `fecha`       DATE NOT NULL,
+  `hora`        TIME DEFAULT NULL,
+  `todo_el_dia` TINYINT(1) NOT NULL DEFAULT 0,
+  `color`       ENUM('rosa','crema','menta','chocolate') NOT NULL DEFAULT 'rosa',
+  `created_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_fecha` (`fecha`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

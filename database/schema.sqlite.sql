@@ -65,6 +65,39 @@ CREATE TABLE IF NOT EXISTS receta_ingredientes (
 CREATE INDEX IF NOT EXISTS idx_ri_receta      ON receta_ingredientes(receta_id);
 CREATE INDEX IF NOT EXISTS idx_ri_ingrediente ON receta_ingredientes(ingrediente_id);
 
+-- ----------------------------------------------------------
+-- Tabla: notas (bloc de notas del admin)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS notas (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo      TEXT NOT NULL,
+  contenido    TEXT NOT NULL DEFAULT '',
+  color       TEXT NOT NULL DEFAULT 'rosa'
+              CHECK (color IN ('rosa','crema','menta','chocolate')),
+  created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_notas_updated ON notas(updated_at DESC);
+
+-- ----------------------------------------------------------
+-- Tabla: agenda (eventos / citas)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS agenda (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  titulo      TEXT NOT NULL,
+  descripcion TEXT,
+  fecha       TEXT NOT NULL,                 -- YYYY-MM-DD
+  hora        TEXT,                          -- HH:MM (opcional)
+  todo_el_dia INTEGER NOT NULL DEFAULT 0,
+  color       TEXT NOT NULL DEFAULT 'rosa'
+              CHECK (color IN ('rosa','crema','menta','chocolate')),
+  created_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_agenda_fecha ON agenda(fecha);
+
 -- ==========================================================
 -- Datos iniciales de ejemplo (opcional)
 -- ==========================================================

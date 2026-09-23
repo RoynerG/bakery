@@ -66,9 +66,16 @@ if (!function_exists('flash')) {
 }
 
 if (!function_exists('format_money')) {
+    /**
+     * Formatea un monto como pesos chilenos (CLP):
+     *   - Sin decimales
+     *   - Punto como separador de miles
+     *   - Símbolo $ adelante
+     *   Ej: 12500 -> "$12.500"
+     */
     function format_money(float $value): string
     {
-        return '$' . number_format($value, 2, '.', ',');
+        return '$' . number_format((float)$value, 0, ',', '.');
     }
 }
 

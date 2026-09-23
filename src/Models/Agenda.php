@@ -1,0 +1,166 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Database;
+
+/**
+ * Modelo: Agenda (eventos / citas)
+ *
+ * Un evento tiene fecha obligatoria y hora opcional. Si todo_el_dia
+ * es 1, se omite la hora al renderizar.
+ */
+final class Agenda
+{
+    public const COLORES = ['rosa', 'crema', 'menta', 'chocolate'];
+
+    public static function all(): array
+    {
+        return Database::getInstance()->fetchAll(
+            'SELECT * FROM agenda ORDER BY fecha ASC, hora ASC, id ASC'
+        );
+    }
+
+    public static function find(int $id): ?array
+    {
+        return Database::getInstance()->fetchOne(
+            'SELECT * FROM agenda WHERE id = ?',
+            [$id]
+        );
+    }
+
+    /** Devuelve los eventos dentro de un rango (FullCalendar usa start/end ISO). */
+    public static function between(string $start, string $end): array
+    {
+        return Database::getInstance()->fetchAll(
+            'SELECT * FROM agenda WHERE fecha BETWEEN ? AND ? ORDER BY hora ASC',
+            [$start, $end]
+        );
+    }
+
+    public static function create(array $data): int
+    {
+        self::validate($data);
+        $db = Database::getInstance();
+        $db->execute(
+            'INSERT INTO agenda (titulo, descripcion, fecha, hora, todo_el_dia, color)
+             VALUES (?, ?, ?, ?, ?, ?)',
+            [
+                trim($data['titulo']),
+                isset($data['descripcion']) && $data['descripcion'] !== '' ? trim($data['descripcion']) : null,
+                $data['fecha'],
+                self::normalizarHora($data['hora'] ?? null, !empty($data['todo_el_dia'])),
+                !empty($data['todo_el_dia']) ? 1 : 0,
+                self::normalizarColor($data['color'] ?? 'rosa'),
+            ]
+        );
+        return (int)$db->lastInsertId();
+    }
+
+    public static function update(int $id, array $data): bool
+    {
+        self::validate($data);
+        $affected = Database::getInstance()->execute(
+            'UPDATE agenda
+                SET titulo = ?, descripcion = ?, fecha = ?, hora = ?,
+                    todo_el_dia = ?, color = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?',
+            [
+                trim($data['titulo']),
+                isset($data['descripcion']) && $data['descripcion'] !== '' ? trim($data['descripcion']) : null,
+                $data['fecha'],
+                self::normalizarHora($data['hora'] ?? null, !empty($data['todo_el_dia'])),
+                !empty($data['todo_el_dia']) ? 1 : 0,
+                self::normalizarColor($data['color'] ?? 'rosa'),
+                $id,
+            ]
+        )->rowCount();
+        return $affected > 0;
+    }
+
+    public static function delete(int $id): bool
+    {
+        $affected = Database::getInstance()->execute(
+            'DELETE FROM agenda WHERE id = ?',
+            [$id]
+        )->rowCount();
+        return $affected > 0;
+    }
+
+    private static function validate(array $data): void
+    {
+        if (empty($data['titulo']) || mb_strlen(trim($data['titulo'])) < 1) {
+            throw new \InvalidArgumentException('El título del evento es obligatorio.');
+        }
+        if (mb_strlen(trim($data['titulo'])) > 180) {
+            throw new \InvalidArgumentException('El título es demasiado largo (máx 180 caracteres).');
+        }
+        if (empty($data['fecha'])) {
+            throw new \InvalidArgumentException('La fecha es obligatoria.');
+        }
+        $d = \DateTime::createFromFormat('Y-m-d', $data['fecha']);
+        if (!$d || $d->format('Y-m-d') !== $data['fecha']) {
+            throw new \InvalidArgumentException('Fecha inválida.');
+        }
+        if (!empty($data['hora'])) {
+            $h = \DateTime::createFromFormat('H:i', $data['hora']);
+            if (!$h || $h->format('H:i') !== $data['hora']) {
+                throw new \InvalidArgumentException('Hora inválida.');
+            }
+        }
+    }
+
+    private static function normalizarHora(?string $hora, bool $todoElDia): ?string
+    {
+        if ($todoElDia) return null;
+        if (!$hora || trim($hora) === '') return null;
+        return $hora;
+    }
+
+    private static function normalizarColor(string $color): string
+    {
+        return in_array($color, self::COLORES, true) ? $color : 'rosa';
+    }
+
+    /** Convierte un evento al formato esperado por FullCalendar. */
+    public static function toCalendarEvent(array $e): array
+    {
+        $colorMap = [
+            'rosa'       => '#ff6b9d',
+            'crema'      => '#ffb37a',
+            'menta'      => '#3eb97a',
+            'chocolate'  => '#8b4513',
+        ];
+        $c = $colorMap[$e['color']] ?? '#ff6b9d';
+
+        if (!empty($e['todo_el_dia'])) {
+            return [
+                'id'    => 'ag_' . (int)$e['id'],
+                'title' => $e['titulo'],
+                'start' => $e['fecha'],
+                'allDay'=> true,
+                'backgroundColor' => $c,
+                'borderColor'     => $c,
+                'extendedProps'   => [
+                    'db_id'       => (int)$e['id'],
+                    'descripcion' => $e['descripcion'] ?? '',
+                    'color'       => $e['color'],
+                ],
+            ];
+        }
+        return [
+            'id'    => 'ag_' . (int)$e['id'],
+            'title' => $e['titulo'],
+            'start' => $e['fecha'] . 'T' . ($e['hora'] ?: '00:00'),
+            'allDay'=> false,
+            'backgroundColor' => $c,
+            'borderColor'     => $c,
+            'extendedProps'   => [
+                'db_id'       => (int)$e['id'],
+                'descripcion' => $e['descripcion'] ?? '',
+                'color'       => $e['color'],
+            ],
+        ];
+    }
+}

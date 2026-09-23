@@ -97,9 +97,11 @@ $current = basename($_SERVER['SCRIPT_NAME']);
         <div class="hidden md:flex items-center gap-1">
           <?php
           $navItems = [
-            ['index.php',     '🏠', 'Recetario'],
+            ['index.php',     '🏠', 'Inicio'],
             ['inventario.php','📦', 'Inventario'],
             ['receta.php',    '✨', 'Nueva receta'],
+            ['notas.php',     '📝', 'Notas'],
+            ['agenda.php',    '📅', 'Agenda'],
           ];
           foreach ($navItems as [$href, $icon, $label]):
             $active = $current === $href;

@@ -702,6 +702,126 @@ input[type="range"]::-moz-range-thumb {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 
+/* =========================================================
+   NOTAS — Post-its pastel
+   ========================================================= */
+.nota-card {
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-radius: 1.25rem;
+  border: 2px solid rgba(255,255,255,.6);
+  box-shadow: 0 10px 24px -8px rgba(255,107,157,.18),
+              0 2px 4px rgba(190,80,120,.05);
+  position: relative;
+  transition: transform .25s ease, box-shadow .25s ease;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+.nota-card::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-3deg);
+  width: 60px;
+  height: 18px;
+  background: rgba(255,255,255,.55);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+.nota-card:hover {
+  transform: translateY(-4px) rotate(-1deg);
+  box-shadow: 0 18px 36px -10px rgba(255,107,157,.3),
+              0 4px 8px rgba(190,80,120,.08);
+}
+.nota-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.7);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  transition: background .15s ease;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: #5d2f0c;
+}
+.nota-icon-btn:hover { background: #fff; }
+.nota-color-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nota-color-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 10px -2px rgba(0,0,0,.1);
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+.nota-color-swatch:hover { transform: scale(1.08); }
+
+/* =========================================================
+   FULLCALENDAR — overrides pastel
+   ========================================================= */
+.fc {
+  --fc-border-color: #ffd6e7;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: #fff8f5;
+  --fc-list-event-hover-bg-color: #fff0f5;
+  --fc-today-bg-color: rgba(255, 209, 220, .35);
+  --fc-event-bg-color: #ff6b9d;
+  --fc-event-border-color: #ff6b9d;
+  --fc-event-text-color: #fff;
+  --fc-button-bg-color: #fff;
+  --fc-button-border-color: #ffd6e7;
+  --fc-button-text-color: #c93a73;
+  --fc-button-hover-bg-color: #ffd6e7;
+  --fc-button-hover-border-color: #ff8fb7;
+  --fc-button-active-bg-color: #ff6b9d;
+  --fc-button-active-border-color: #ff6b9d;
+  font-family: 'Quicksand', system-ui, sans-serif !important;
+}
+.fc .fc-toolbar-title {
+  font-family: 'Pacifico', cursive !important;
+  color: #c93a73;
+  font-size: 1.5rem !important;
+}
+.fc .fc-button {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
+  box-shadow: 0 2px 6px -1px rgba(255,107,157,.25) !important;
+  padding: .35rem .9rem !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  color: #fff !important;
+}
+.fc .fc-button-primary:not(:disabled):hover {
+  color: #c93a73 !important;
+}
+.fc-event {
+  cursor: pointer !important;
+}
+.fc-daygrid-day-number,
+.fc-col-header-cell-cushion {
+  color: #5d2f0c !important;
+  text-decoration: none !important;
+}
+.fc-day-today .fc-daygrid-day-number {
+  color: #c93a73 !important;
+  font-weight: 700 !important;
+}
+.fc-day-other .fc-daygrid-day-number {
+  opacity: .35;
+}
+
 @media print {
   .sweet-bg, header nav, .fab, footer, .wizard-progress, .stepper { display: none !important; }
   body { background: #fff; }
