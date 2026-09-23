@@ -45,3 +45,25 @@ try {
 } catch (Throwable $e) {
     // Silenciar: la página mostrará el mensaje si lo requiere
 }
+
+// 5. Guard de autenticacion global:
+//    - Si NO hay usuarios en la BD -> forzar setup.php
+//    - Si hay usuarios pero NO hay sesion -> forzar login.php
+//    (excepto en setup.php, login.php y logout.php que son publicos)
+$scriptActual = basename($_SERVER['SCRIPT_NAME'] ?? '');
+$rutasPublicas = ['setup.php', 'login.php', 'logout.php'];
+
+if (!in_array($scriptActual, $rutasPublicas, true)) {
+    try {
+        $hayUsuarios = (int) App\Database::getInstance()->fetchColumn('SELECT COUNT(*) FROM usuarios') > 0;
+
+        if (!$hayUsuarios) {
+            redirect('setup.php');
+        }
+        if (!App\Auth::check()) {
+            redirect('login.php');
+        }
+    } catch (Throwable $e) {
+        // Si falla la consulta, dejamos que cada pagina maneje su auth
+    }
+}

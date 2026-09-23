@@ -7,6 +7,7 @@
  *   end    -> YYYY-MM-DD (fin del rango visible)
  *
  * Devuelve JSON con eventos: [{id,title,start,allDay,backgroundColor,...}]
+ * Si no hay sesión devuelve 401 JSON (no redirect) para no romper FullCalendar.
  */
 declare(strict_types=1);
 
@@ -19,8 +20,12 @@ use App\Auth;
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-// Protegemos con login: solo el admin ve su agenda
-Auth::require();
+// Sin sesion -> JSON 401 (el calendario simplemente no muestra eventos)
+if (!Auth::check()) {
+    http_response_code(401);
+    echo json_encode(['error' => 'No autenticado', 'events' => []]);
+    exit;
+}
 
 $start = $_GET['start'] ?? date('Y-m-01');
 $end   = $_GET['end']   ?? date('Y-m-t');
