@@ -1,0 +1,47 @@
+# Repostería - Directorio público
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Permitir acceso directo a archivos/carpetas existentes
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Redirigir todo lo demás a index.php
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Tipos MIME para imágenes comunes
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/svg+xml .svg
+</IfModule>
+
+# Seguridad - Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Proteger archivos de configuración y código
+<FilesMatch "\.(env|ini|log|sh|sql|sqlite|sqlite3)$">
+    Require all denied
+</FilesMatch>
+
+# Cache para assets estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# La ejecución de PHP dentro de /uploads está bloqueada por su propio .htaccess
+# (public/uploads/.htaccess). Aquí NO se debe bloquear PHP, pues contiene la app.

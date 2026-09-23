@@ -1,0 +1,89 @@
+-- ==========================================================
+-- Esquema MySQL/MariaDB para Hostinger (sin CREATE DATABASE)
+-- ==========================================================
+-- En Hostinger la base de datos YA EXISTE (la creas desde el panel).
+-- Antes de ejecutar este script, SELECCIONA tu base de datos en
+-- phpMyAdmin (panel izquierdo). NO hace falta CREATE DATABASE.
+--
+-- Compatible con: MySQL 5.7+ / MariaDB 10.3+
+-- ==========================================================
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------------------------------------
+-- Tabla: ingredientes
+-- ----------------------------------------------------------
+DROP TABLE IF EXISTS `receta_ingredientes`;
+DROP TABLE IF EXISTS `recetas`;
+DROP TABLE IF EXISTS `ingredientes`;
+
+CREATE TABLE `ingredientes` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nombre`        VARCHAR(120) NOT NULL,
+  `unidad_medida` ENUM('kilo','litro','pieza','gramo','mililitro') NOT NULL DEFAULT 'pieza',
+  `costo_base`    DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+  `notas`         VARCHAR(255) DEFAULT NULL,
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: recetas
+-- ----------------------------------------------------------
+CREATE TABLE `recetas` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nombre`        VARCHAR(180) NOT NULL,
+  `descripcion`   VARCHAR(500) DEFAULT NULL,
+  `instrucciones` TEXT NOT NULL,
+  `imagen`        VARCHAR(255) DEFAULT NULL,
+  `porciones`     INT UNSIGNED NOT NULL DEFAULT 1,
+  `costo_total`   DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: receta_ingredientes (muchos a muchos)
+-- ----------------------------------------------------------
+CREATE TABLE `receta_ingredientes` (
+  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `receta_id`      INT UNSIGNED NOT NULL,
+  `ingrediente_id` INT UNSIGNED NOT NULL,
+  `cantidad`       DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+  `subtotal`       DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  PRIMARY KEY (`id`),
+  KEY `idx_receta` (`receta_id`),
+  KEY `idx_ingrediente` (`ingrediente_id`),
+  CONSTRAINT `fk_ri_receta`
+    FOREIGN KEY (`receta_id`) REFERENCES `recetas` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_ri_ingrediente`
+    FOREIGN KEY (`ingrediente_id`) REFERENCES `ingredientes` (`id`)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ==========================================================
+-- Datos iniciales de ejemplo (opcional)
+-- ==========================================================
+INSERT INTO `ingredientes` (`nombre`, `unidad_medida`, `costo_base`, `notas`) VALUES
+  ('Harina de trigo',          'kilo',   28.50, 'Para pasteles y galletas'),
+  ('Azúcar blanca',            'kilo',   32.00, 'Refinada'),
+  ('Mantequilla sin sal',      'kilo',  180.00, 'Sin sal'),
+  ('Huevo',                    'pieza',   3.50, 'Tamaño grande'),
+  ('Leche entera',             'litro',  28.00, 'Entera'),
+  ('Chocolate semi-amargo',    'kilo',  220.00, 'Para cobertura'),
+  ('Crema para batir',         'litro',  95.00, '36% grasa'),
+  ('Vainilla',                 'mililitro', 1.20, 'Extracto natural'),
+  ('Polvo para hornear',       'gramo',   0.45, 'Doble acción'),
+  ('Sal',                      'gramo',   0.05, 'Fina');
+
+-- ==========================================================
+-- Fin del esquema
+-- ==========================================================

@@ -1,0 +1,34 @@
+# ───────── Archivos del IDE ─────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ───────── Variables de entorno ─────────
+# Nunca subas credenciales al repositorio
+.env
+.env.*
+!.env.example
+
+# ───────── Base de datos local (SQLite) ─────────
+# Se regenera automáticamente
+database/reposteria.sqlite
+database/*.sqlite
+database/*.sqlite3
+
+# ───────── Imágenes subidas por usuarios ─────────
+public/uploads/*
+!public/uploads/.htaccess
+!public/uploads/.gitkeep
+!public/uploads/index.html
+
+# ───────── Logs ─────────
+*.log
+storage/logs/
+
+# ───────── Caché y temporales ─────────
+*.cache
+*.tmp
+*.bak

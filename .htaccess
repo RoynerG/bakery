@@ -1,0 +1,24 @@
+# Repostería - Raíz del proyecto
+# Redirige todas las peticiones al directorio /public/
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloquear acceso directo a carpetas privadas
+    RewriteRule ^(config|src|database)/?(.*)$ - [F,L]
+
+    # Si la URL YA contiene "/public/", no reescribir (evita loops).
+    RewriteCond %{REQUEST_URI} !/public/
+    RewriteRule ^ public/$1 [L]
+</IfModule>
+
+# Denegar acceso a archivos sensibles
+<FilesMatch "\.(env|ini|log|sh|sql|sqlite|sqlite3|md|sqlite-journal|sqlite-wal|sqlite-shm)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
