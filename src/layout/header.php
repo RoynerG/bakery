@@ -98,17 +98,17 @@ $current = basename($_SERVER['SCRIPT_NAME']);
           <?php
           $navItems = [
             ['index.php',     '🏠', 'Inicio'],
+            ['index.php',     '🍰', 'Recetas'],
             ['inventario.php','📦', 'Inventario'],
-            ['receta.php',    '✨', 'Nueva receta'],
             ['notas.php',     '📝', 'Notas'],
             ['agenda.php',    '📅', 'Agenda'],
           ];
           foreach ($navItems as [$href, $icon, $label]):
-            $active = $current === $href;
+            $staticActive = $label === 'Recetas' ? in_array($current, ['index.php','receta.php','ver-receta.php'], true) : ($current === $href);
           ?>
             <a href="<?= url($href) ?>"
                class="px-4 py-2 rounded-full font-semibold text-sm transition-all flex items-center gap-2
-                      <?= $active
+                      <?= $staticActive
                           ? 'bg-rose-400 text-white shadow-md shadow-rose-300/50'
                           : 'text-chocolate-700 hover:bg-rose-50 hover:text-rose-500' ?>">
               <span><?= $icon ?></span><span><?= e($label) ?></span>
