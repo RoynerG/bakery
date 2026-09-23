@@ -5,42 +5,8 @@
 
 document.addEventListener('alpine:init', () => {
 
-  // ----- Estado UI global (compartido entre paginas) -----
-  // Se inicializa aqui para que SIEMPRE este disponible,
-  // independientemente de si la pagina tiene su propio script
-  // de inicializacion (que ademas podria estar cacheado).
-  Alpine.store('ui', {
-    categoriasOpen: new URLSearchParams(location.search).get('modal') === 'categorias'
-  });
-
-  // ----- Helpers globales de fallback (no dependen de Alpine) -----
-  // Funcionan aunque Alpine no haya terminado de cargar.
-  window.abrirCategorias = function () {
-    // Intenta via Alpine.store
-    try {
-      if (window.Alpine && Alpine.store) {
-        Alpine.store('ui').categoriasOpen = true;
-      }
-    } catch (e) { /* sigue al fallback */ }
-    // Fallback puro DOM (con important para ganar a [x-cloak] si existiera)
-    var m = document.getElementById('categorias-modal');
-    if (m) {
-      m.classList.add('show');
-      m.style.setProperty('display', 'flex', 'important');
-    }
-  };
-  window.cerrarCategorias = function () {
-    try {
-      if (window.Alpine && Alpine.store) {
-        Alpine.store('ui').categoriasOpen = false;
-      }
-    } catch (e) { /* sigue al fallback */ }
-    var m = document.getElementById('categorias-modal');
-    if (m) {
-      m.classList.remove('show');
-      m.style.setProperty('display', 'none', 'important');
-    }
-  };
+  // Las categorias ahora se gestionan en /categorias.php (no modal).
+  // Solo necesitamos Alpine.data para componentes que usan x-data.
 
   // ----- confirmDelete -----
   Alpine.data('confirmDelete', (message = 'Estas seguro?') => ({
@@ -88,34 +54,6 @@ document.addEventListener('alpine:init', () => {
         }
       });
       this.cal.render();
-    }
-  }));
-
-  // ----- categoriasModal -----
-  Alpine.data('categoriasModal', (inicial = []) => ({
-    lista: inicial,
-    async guardar(cat) {
-      const fd = new FormData();
-      const csrf = document.querySelector('input[name=_csrf]');
-      if (csrf) fd.append('_csrf', csrf.value);
-      fd.append('tipo',       'categoria');
-      fd.append('cat_accion', 'editar');
-      fd.append('id',         cat.id);
-      fd.append('emoji',      cat.emoji);
-      fd.append('nombre',     cat.nombre);
-      const r = await fetch('notas.php', { method: 'POST', body: fd });
-      if (r.ok) location.reload();
-    },
-    async eliminar(cat) {
-      if (!confirm('Eliminar la categoria "' + cat.nombre + '"?\n\nLas notas que la usan quedaran sin categoria.')) return;
-      const fd = new FormData();
-      const csrf = document.querySelector('input[name=_csrf]');
-      if (csrf) fd.append('_csrf', csrf.value);
-      fd.append('tipo',       'categoria');
-      fd.append('cat_accion', 'eliminar');
-      fd.append('id',         cat.id);
-      const r = await fetch('notas.php', { method: 'POST', body: fd });
-      if (r.ok) location.reload();
     }
   }));
 

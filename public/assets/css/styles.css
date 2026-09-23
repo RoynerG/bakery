@@ -864,6 +864,34 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* =========================================================
+   CATEGORIAS — cards pastel
+   ========================================================= */
+.categoria-card {
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #fff8f5 0%, #fff0f5 100%);
+  border-radius: 1.25rem;
+  border: 2px solid #ffd6e7;
+  box-shadow: 0 10px 24px -10px rgba(255,107,157,.18);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.categoria-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px -10px rgba(255,107,157,.28);
+}
+.categoria-emoji {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffd6e7, #ffe5b4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  box-shadow: inset 0 -2px 4px rgba(190,80,120,.05);
+}
+
+/* =========================================================
    FULLCALENDAR — overrides pastel
    ========================================================= */
 .fc {
