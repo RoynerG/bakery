@@ -161,6 +161,31 @@ $categorias = Categoria::all();
         </div>
       </div>
 
+      <div>
+        <label class="block text-sm font-bold text-chocolate-700 mb-2">Categoría</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="cat-pick cursor-pointer">
+            <input type="radio" name="categoria_id" value="" class="sr-only peer"
+                   <?= old('categoria_id', $eventoEditar['categoria_id'] ?? '') === null || old('categoria_id', $eventoEditar['categoria_id'] ?? '') === '' ? 'checked' : '' ?>>
+            <span class="cat-pill peer-checked:ring-2 peer-checked:ring-rose-400">Sin categoría</span>
+          </label>
+          <?php foreach ($categorias as $c):
+            $selCat = (int)old('categoria_id', $eventoEditar['categoria_id'] ?? 0) === (int)$c['id'];
+          ?>
+            <label class="cat-pick cursor-pointer">
+              <input type="radio" name="categoria_id" value="<?= (int)$c['id'] ?>" class="sr-only peer" <?= $selCat ? 'checked' : '' ?>>
+              <span class="cat-pill peer-checked:ring-2 peer-checked:ring-rose-400">
+                <span class="text-base"><?= e($c['emoji']) ?></span> <?= e($c['nombre']) ?>
+              </span>
+            </label>
+          <?php endforeach; ?>
+        </div>
+        <p class="text-xs text-chocolate-500 mt-2">
+          ¿No encuentras una? <button type="button" onclick="window.abrirCategorias(); return false;"
+                                       class="text-rose-500 font-bold underline">Gestionar categorías</button>
+        </p>
+      </div>
+
       <div class="flex flex-wrap gap-3 pt-2">
         <button type="submit" class="btn btn-primary">
           <span>💾</span> <?= $accion === 'crear' ? 'Guardar evento' : 'Actualizar' ?>
@@ -311,16 +336,11 @@ document.addEventListener('alpine:init', () => {
 </script>
 
 <!-- ============ MODAL DE CATEGORÍAS (compartido con notas.php) ============ -->
-<div id="categorias-modal"
-     x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
+<div id="categorias-modal" class="modal-backdrop">
+  <div x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
     'id' => (int)$c['id'], 'emoji' => $c['emoji'], 'nombre' => $c['nombre']
 ], $categorias)), ENT_QUOTES, 'UTF-8') ?>)"
-     x-show="$store.ui.categoriasOpen"
-     @keydown.escape.window="window.cerrarCategorias()"
-     x-cloak
-     class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-     style="display:none;">
-  <div @click.outside="window.cerrarCategorias()"
+       @click.outside="window.cerrarCategorias()"
        class="card max-w-lg w-full p-6 animate-pop max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
       <h3 class="font-sweet text-2xl text-rose-500">🏷️ Categorías</h3>
@@ -364,38 +384,30 @@ document.addEventListener('alpine:init', () => {
 </div>
 
 <script>
-document.addEventListener('alpine:init', () => {
-  if (!Alpine.store('ui')) {
-    Alpine.store('ui', { categoriasOpen: false });
+// Funcion inline DEFINITIVA: abre/cierra el modal de categorias
+// con classList.add('open'). No depende de Alpine ni de app.js.
+(function () {
+  function abrir() {
+    var m = document.getElementById('categorias-modal');
+    if (m) m.classList.add('open');
   }
-
-  Alpine.data('categoriasModal', (inicial = []) => ({
-    lista: inicial,
-    async guardar(cat) {
-      const fd = new FormData();
-      const csrf = document.querySelector('input[name=_csrf]');
-      if (csrf) fd.append('_csrf', csrf.value);
-      fd.append('tipo',       'categoria');
-      fd.append('cat_accion', 'editar');
-      fd.append('id',         cat.id);
-      fd.append('emoji',      cat.emoji);
-      fd.append('nombre',     cat.nombre);
-      const r = await fetch('notas.php', { method: 'POST', body: fd });
-      if (r.ok) location.reload();
-    },
-    async eliminar(cat) {
-      if (!confirm('¿Eliminar la categoría "' + cat.nombre + '"?\n\nLas notas que la usan quedarán sin categoría.')) return;
-      const fd = new FormData();
-      const csrf = document.querySelector('input[name=_csrf]');
-      if (csrf) fd.append('_csrf', csrf.value);
-      fd.append('tipo',       'categoria');
-      fd.append('cat_accion', 'eliminar');
-      fd.append('id',         cat.id);
-      const r = await fetch('notas.php', { method: 'POST', body: fd });
-      if (r.ok) location.reload();
-    },
-  }));
-});
+  function cerrar() {
+    var m = document.getElementById('categorias-modal');
+    if (m) m.classList.remove('open');
+  }
+  window.abrirCategorias = abrir;
+  window.cerrarCategorias = cerrar;
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrar();
+  });
+  if (new URLSearchParams(location.search).get('modal') === 'categorias') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', abrir);
+    } else {
+      abrir();
+    }
+  }
+})();
 </script>
 
 <?php require_once __DIR__ . '/../src/layout/footer.php'; ?>

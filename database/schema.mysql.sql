@@ -123,19 +123,24 @@ CREATE TABLE `notas` (
 -- Tabla: agenda (eventos / citas)
 -- ----------------------------------------------------------
 CREATE TABLE `agenda` (
-  `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `titulo`      VARCHAR(180) NOT NULL,
-  `descripcion` TEXT,
-  `fecha`       DATE NOT NULL,
-  `fecha_fin`   DATE DEFAULT NULL,
-  `hora`        TIME DEFAULT NULL,
-  `todo_el_dia` TINYINT(1) NOT NULL DEFAULT 0,
-  `color`       ENUM('rosa','crema','menta','chocolate') NOT NULL DEFAULT 'rosa',
-  `created_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titulo`       VARCHAR(180) NOT NULL,
+  `descripcion`  TEXT,
+  `fecha`        DATE NOT NULL,
+  `fecha_fin`    DATE DEFAULT NULL,
+  `hora`         TIME DEFAULT NULL,
+  `todo_el_dia`  TINYINT(1) NOT NULL DEFAULT 0,
+  `color`        ENUM('rosa','crema','menta','chocolate') NOT NULL DEFAULT 'rosa',
+  `categoria_id` INT UNSIGNED DEFAULT NULL,
+  `created_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_fecha`     (`fecha`),
-  KEY `idx_fecha_fin` (`fecha_fin`)
+  KEY `idx_fecha`        (`fecha`),
+  KEY `idx_fecha_fin`    (`fecha_fin`),
+  KEY `idx_categoria`    (`categoria_id`),
+  CONSTRAINT `fk_agenda_categoria`
+    FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

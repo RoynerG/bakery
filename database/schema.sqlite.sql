@@ -104,12 +104,15 @@ CREATE TABLE IF NOT EXISTS agenda (
   todo_el_dia  INTEGER NOT NULL DEFAULT 0,
   color        TEXT NOT NULL DEFAULT 'rosa'
                CHECK (color IN ('rosa','crema','menta','chocolate')),
+  categoria_id INTEGER,
   created_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_agenda_fecha     ON agenda(fecha);
 CREATE INDEX IF NOT EXISTS idx_agenda_fecha_fin ON agenda(fecha_fin);
+CREATE INDEX IF NOT EXISTS idx_agenda_categoria ON agenda(categoria_id);
 
 -- ==========================================================
 -- Datos iniciales de ejemplo (opcional)

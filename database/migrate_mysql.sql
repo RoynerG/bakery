@@ -105,6 +105,54 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- 7. Agregar columna categoria_id a agenda (si no existe)
+SET @col_existe = (
+  SELECT COUNT(*) FROM information_schema.columns
+   WHERE table_schema = DATABASE()
+     AND table_name   = 'agenda'
+     AND column_name  = 'categoria_id'
+);
+
+SET @sql = IF(@col_existe = 0,
+  'ALTER TABLE `agenda` ADD COLUMN `categoria_id` INT UNSIGNED DEFAULT NULL AFTER `color`',
+  'SELECT "categoria_id ya existe" AS msg'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- 8. FK categoria -> agenda (si no existe)
+SET @fk_existe = (
+  SELECT COUNT(*) FROM information_schema.table_constraints
+   WHERE table_schema      = DATABASE()
+     AND table_name        = 'agenda'
+     AND constraint_name   = 'fk_agenda_categoria'
+);
+
+SET @sql = IF(@fk_existe = 0,
+  'ALTER TABLE `agenda` ADD CONSTRAINT `fk_agenda_categoria` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`) ON DELETE SET NULL ON UPDATE CASCADE',
+  'SELECT "fk_agenda_categoria ya existe" AS msg'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- 9. Indice en categoria_id de agenda
+SET @idx_existe = (
+  SELECT COUNT(*) FROM information_schema.statistics
+   WHERE table_schema = DATABASE()
+     AND table_name   = 'agenda'
+     AND index_name   = 'idx_categoria'
+);
+
+SET @sql = IF(@idx_existe = 0,
+  'ALTER TABLE `agenda` ADD KEY `idx_categoria` (`categoria_id`)',
+  'SELECT "idx_categoria ya existe" AS msg'
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- ==========================================================
 -- La columna 'color' de notas queda en la tabla pero ya no
 -- se usa. Puedes ignorarla o borrarla con:

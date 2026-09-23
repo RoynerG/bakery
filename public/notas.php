@@ -216,16 +216,11 @@ $titulo    = 'Notas';
 <?php endif; ?>
 
 <!-- ============ MODAL DE CATEGORÍAS ============ -->
-<div id="categorias-modal"
-     x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
+<div id="categorias-modal" class="modal-backdrop">
+  <div x-data="categoriasModal(<?= htmlspecialchars(json_encode(array_map(fn($c) => [
     'id' => (int)$c['id'], 'emoji' => $c['emoji'], 'nombre' => $c['nombre']
 ], $categorias)), ENT_QUOTES, 'UTF-8') ?>)"
-     x-show="$store.ui.categoriasOpen"
-     @keydown.escape.window="window.cerrarCategorias()"
-     x-cloak
-     class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-     style="display:none;">
-  <div @click.outside="window.cerrarCategorias()"
+       @click.outside="window.cerrarCategorias()"
        class="card max-w-lg w-full p-6 animate-pop max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
       <h3 class="font-sweet text-2xl text-rose-500">🏷️ Categorías</h3>
@@ -269,6 +264,36 @@ $titulo    = 'Notas';
     </div>
   </div>
 </div>
+
+<script>
+// Funcion inline DEFINITIVA: abre/cierra el modal de categorias
+// con classList.add('open'). No depende de Alpine ni de app.js.
+// Si por alguna razon app.js falla, ESTO sigue funcionando.
+(function () {
+  function abrir() {
+    var m = document.getElementById('categorias-modal');
+    if (m) m.classList.add('open');
+  }
+  function cerrar() {
+    var m = document.getElementById('categorias-modal');
+    if (m) m.classList.remove('open');
+  }
+  window.abrirCategorias = abrir;
+  window.cerrarCategorias = cerrar;
+  // ESC para cerrar
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrar();
+  });
+  // Si llega la pagina con ?modal=categorias, abrir
+  if (new URLSearchParams(location.search).get('modal') === 'categorias') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', abrir);
+    } else {
+      abrir();
+    }
+  }
+})();
+</script>
 
 <script>
 document.addEventListener('alpine:init', () => {

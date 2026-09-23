@@ -4,6 +4,22 @@
    ============================================ */
 
 [x-cloak] { display: none; }
+
+/* Modal de categorias (y cualquier modal): empieza oculto
+   por clase, NO por style inline. Asi el JS fallback puede
+   mostrarlo con un simple classList.add('open'). */
+.modal-backdrop { display: none; }
+.modal-backdrop.open {
+  display: flex !important;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+}
 html { scroll-behavior: smooth; }
 
 /* ---------- Inputs reposteros ---------- */

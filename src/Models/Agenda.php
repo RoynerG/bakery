@@ -19,14 +19,20 @@ final class Agenda
     public static function all(): array
     {
         return Database::getInstance()->fetchAll(
-            'SELECT * FROM agenda ORDER BY fecha ASC, hora ASC, id ASC'
+            'SELECT a.*, c.emoji AS cat_emoji, c.nombre AS cat_nombre
+               FROM agenda a
+          LEFT JOIN categorias c ON c.id = a.categoria_id
+              ORDER BY a.fecha ASC, a.hora ASC, a.id ASC'
         );
     }
 
     public static function find(int $id): ?array
     {
         return Database::getInstance()->fetchOne(
-            'SELECT * FROM agenda WHERE id = ?',
+            'SELECT a.*, c.emoji AS cat_emoji, c.nombre AS cat_nombre
+               FROM agenda a
+          LEFT JOIN categorias c ON c.id = a.categoria_id
+              WHERE a.id = ?',
             [$id]
         );
     }
@@ -35,9 +41,11 @@ final class Agenda
     public static function between(string $start, string $end): array
     {
         return Database::getInstance()->fetchAll(
-            'SELECT * FROM agenda
-              WHERE fecha <= ? AND (fecha_fin IS NULL OR fecha_fin >= ?)
-              ORDER BY fecha ASC, hora ASC',
+            'SELECT a.*, c.emoji AS cat_emoji, c.nombre AS cat_nombre
+               FROM agenda a
+          LEFT JOIN categorias c ON c.id = a.categoria_id
+              WHERE a.fecha <= ? AND (a.fecha_fin IS NULL OR a.fecha_fin >= ?)
+              ORDER BY a.fecha ASC, a.hora ASC',
             [$end, $start]
         );
     }
@@ -47,8 +55,8 @@ final class Agenda
         self::validate($data);
         $db = Database::getInstance();
         $db->execute(
-            'INSERT INTO agenda (titulo, descripcion, fecha, fecha_fin, hora, todo_el_dia, color)
-             VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO agenda (titulo, descripcion, fecha, fecha_fin, hora, todo_el_dia, color, categoria_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 trim($data['titulo']),
                 isset($data['descripcion']) && $data['descripcion'] !== '' ? trim($data['descripcion']) : null,
@@ -57,6 +65,7 @@ final class Agenda
                 self::normalizarHora($data['hora'] ?? null, !empty($data['todo_el_dia'])),
                 !empty($data['todo_el_dia']) ? 1 : 0,
                 self::normalizarColor($data['color'] ?? 'rosa'),
+                self::normalizarCategoria($data['categoria_id'] ?? null),
             ]
         );
         return (int)$db->lastInsertId();
@@ -68,7 +77,7 @@ final class Agenda
         $affected = Database::getInstance()->execute(
             'UPDATE agenda
                 SET titulo = ?, descripcion = ?, fecha = ?, fecha_fin = ?,
-                    hora = ?, todo_el_dia = ?, color = ?,
+                    hora = ?, todo_el_dia = ?, color = ?, categoria_id = ?,
                     updated_at = CURRENT_TIMESTAMP
               WHERE id = ?',
             [
@@ -79,6 +88,7 @@ final class Agenda
                 self::normalizarHora($data['hora'] ?? null, !empty($data['todo_el_dia'])),
                 !empty($data['todo_el_dia']) ? 1 : 0,
                 self::normalizarColor($data['color'] ?? 'rosa'),
+                self::normalizarCategoria($data['categoria_id'] ?? null),
                 $id,
             ]
         )->rowCount();
@@ -143,6 +153,13 @@ final class Agenda
     private static function normalizarColor(string $color): string
     {
         return in_array($color, self::COLORES, true) ? $color : 'rosa';
+    }
+
+    private static function normalizarCategoria($id): ?int
+    {
+        if ($id === null || $id === '' || $id === '0') return null;
+        $id = (int)$id;
+        return $id > 0 ? $id : null;
     }
 
     /** Convierte un evento al formato esperado por FullCalendar. */
