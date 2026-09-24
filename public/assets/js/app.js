@@ -73,8 +73,13 @@ document.addEventListener('alpine:init', () => {
       return Math.round((p / c) * 100) / 100;
     },
     money(v) {
-      var n = Math.round((parseFloat(v) || 0));
-      return '$' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      var n = parseFloat(v) || 0;
+      // Montos grandes en CLP: sin decimales (formato CLP, no hay centavos)
+      // Precios unitarios chicos (< 100): mostrar decimales como en Excel
+      if (Math.abs(n) >= 100 || n === 0) {
+        return '$' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      }
+      return '$' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
   }));
 
@@ -343,7 +348,10 @@ document.addEventListener('alpine:init', () => {
 
         money(v) {
           var n = parseFloat(v) || 0;
-          return '$' + n.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+          if (Math.abs(n) >= 100 || n === 0) {
+            return '$' + Math.round(n).toLocaleString('es-CL');
+          }
+          return '$' + n.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
         },
         num(v, d) {
           var n = parseFloat(v) || 0;
