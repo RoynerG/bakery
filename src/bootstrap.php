@@ -59,7 +59,9 @@ try {
 //    - Si hay usuarios pero NO hay sesion -> forzar login.php
 //    (excepto en setup.php, login.php y logout.php que son publicos)
 $scriptActual = basename($_SERVER['SCRIPT_NAME'] ?? '');
-$rutasPublicas = ['setup.php', 'login.php', 'logout.php'];
+$rutasPublicas = ['setup.php', 'login.php', 'logout.php', 'debug.php'];
+
+// DEBUG-MARKER-2026-09-23-v2: deployed?
 
 if (!in_array($scriptActual, $rutasPublicas, true)) {
     try {
