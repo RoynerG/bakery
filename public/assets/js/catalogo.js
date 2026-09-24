@@ -127,6 +127,7 @@ class CatalogoBook {
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.adjustForViewport();
+      this.updateShadow();
     });
 
     let startX = 0;
@@ -142,6 +143,35 @@ class CatalogoBook {
     }, { passive: true });
 
     this.adjustForViewport();
+    this.installCoverClick();
+    this.installShadow();
+  }
+
+  installCoverClick() {
+    // Click en la portada abre el libro (solo si estamos en la primera hoja)
+    const cover = this.leaves[0]?.element;
+    if (!cover) return;
+    cover.addEventListener('click', () => {
+      if (this.flipped === 0) this.flipNext();
+    });
+  }
+
+  installShadow() {
+    // Sombra realista bajo el libro (HTML plano, gradiente radial)
+    const shadow = document.createElement('div');
+    shadow.className = 'book-shadow';
+    this.container.appendChild(shadow);
+    this.shadowEl = shadow;
+    this.updateShadow();
+  }
+
+  updateShadow() {
+    if (!this.shadowEl) return;
+    // Posicionar la sombra bajo el libro visible
+    const w = this.PAGE_W;
+    const h = this.PAGE_H;
+    this.shadowEl.style.width = w * 0.95 + 'px';
+    this.shadowEl.style.height = (h * 0.18) + 'px';
   }
 
   adjustForViewport() {

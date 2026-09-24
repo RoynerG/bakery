@@ -48,6 +48,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Orden actualizado.');
             redirect('productos.php');
         }
+        // Tamanos por categoria: guardar lote
+        if ($accion === 'guardar_tamanos' && isset($_POST['tipo_cat'])) {
+            $tipoCat = $_POST['tipo_cat'];
+            if (!in_array($tipoCat, ['clasica', 'premium', 'destacado'], true)) {
+                throw new RuntimeException('Tipo no valido.');
+            }
+            $db = Database::getInstance();
+            $db->execute('DELETE FROM categoria_variantes WHERE tipo = ?', [$tipoCat]);
+            $orden = 0;
+            if (isset($_POST['items']) && is_array($_POST['items'])) {
+                foreach ($_POST['items'] as $it) {
+                    $label = trim($it['label'] ?? '');
+                    if ($label === '') continue;
+                    $precio = parse_clp($it['precio'] ?? 0);
+                    $db->execute(
+                        'INSERT INTO categoria_variantes (tipo, label, precio, orden) VALUES (?, ?, ?, ?)',
+                        [$tipoCat, $label, $precio, $orden++]
+                    );
+                }
+            }
+            flash('success', 'Tamaños de ' . $tipoCat . ' actualizados.');
+            redirect('productos.php#cat-' . $tipoCat);
+        }
     } catch (Throwable $e) {
         flash('error', $e->getMessage());
         redirect('productos.php');
@@ -63,13 +86,18 @@ $titulo = 'Productos del catalogo';
   <div>
     <h1 class="section-title">Productos del catalogo</h1>
     <p class="text-chocolate-700 mt-2">
-      Edita lo que se ve en el catalogo publico:
-      <a href="<?= url('catalogo.php') ?>" target="_blank" class="text-rose-500 hover:underline">ver libro 3D →</a>
+      Edita lo que se ve en el
+      <a href="<?= url('catalogo.php') ?>" target="_blank" class="text-rose-500 hover:underline">libro 3D publico →</a>
     </p>
   </div>
-  <a href="<?= url('producto.php?accion=crear') ?>" class="btn btn-primary">
-    <span>➕</span> Nuevo producto
-  </a>
+  <div class="flex gap-2">
+    <a href="<?= url('configuracion.php') ?>" class="btn btn-secondary">
+      <span>⚙️</span> Configuracion
+    </a>
+    <a href="<?= url('producto.php?accion=crear') ?>" class="btn btn-primary">
+      <span>➕</span> Nuevo producto
+    </a>
+  </div>
 </section>
 
 <?php if (empty($productos)): ?>
@@ -165,5 +193,103 @@ $titulo = 'Productos del catalogo';
   <?php endforeach; ?>
 
 <?php endif; ?>
+
+<!-- ============================================
+     Tamanos / precios por categoria (compartidos)
+     ============================================ -->
+<?php
+  $catVars = [
+    'clasica' => categoria_variantes('clasica'),
+    'premium' => categoria_variantes('premium'),
+  ];
+  $catLabel = [
+    'clasica' => 'TORTAS CLASICAS',
+    'premium' => 'TORTAS PREMIUM',
+  ];
+?>
+
+<section class="mt-12">
+  <h2 class="font-bold text-chocolate-900 text-xl mb-3">Tamaños y precios por categoría</h2>
+  <p class="text-sm text-chocolate-500 mb-6 max-w-2xl">
+    Estos tamaños se muestran en la tabla al final de las páginas de
+    <b>TORTAS CLÁSICAS</b> y <b>TORTAS PREMIUM</b> del libro. Son compartidos
+    entre todos los productos de la misma categoría.
+  </p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <?php foreach ($catVars as $tipoCat => $items): ?>
+      <form id="cat-<?= e($tipoCat) ?>" method="post"
+            action="<?= url('productos.php?accion=guardar_tamanos') ?>"
+            class="card space-y-4"
+            x-data='catVariantes(<?= json_encode($items) ?>)'>
+        <?= csrf_field() ?>
+        <input type="hidden" name="tipo_cat" value="<?= e($tipoCat) ?>">
+
+        <h3 class="font-sweet text-2xl text-rose-500 flex items-center justify-between">
+          <span><?= e($catLabel[$tipoCat]) ?></span>
+          <button type="button" @click="add()" class="btn btn-secondary !py-1 !px-3 !text-xs">
+            ➕ Agregar
+          </button>
+        </h3>
+
+        <div class="space-y-2">
+          <template x-for="(it, i) in items" :key="i">
+            <div class="grid grid-cols-12 gap-2 items-center">
+              <div class="col-span-7">
+                <input type="text" :name="`items[${i}][label]`" x-model="it.label"
+                       placeholder="Ej. 10 personas">
+              </div>
+              <div class="col-span-3">
+                <input type="text" inputmode="numeric" :name="`items[${i}][precio]`" x-model="it.precioFmt"
+                       @input="onPrecio($event, i)"
+                       placeholder="Precio CLP">
+              </div>
+              <div class="col-span-2 text-right">
+                <button type="button" @click="remove(i)" class="btn btn-danger !py-1 !px-3 !text-xs w-full">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <p x-show="items.length === 0" class="text-sm text-chocolate-400 italic text-center py-3">
+            Sin tamaños. Agregá al menos uno.
+          </p>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full">
+          <span>💾</span> Guardar tamaños
+        </button>
+      </form>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.data('catVariantes', (initial) => ({
+    items: Array.isArray(initial) && initial.length > 0
+      ? initial.map(v => ({
+          label: v.label || '',
+          precio: Number(v.precio) || 0,
+          precioFmt: (Number(v.precio) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        }))
+      : [{ label: '', precio: 0, precioFmt: '' }],
+    add() { this.items.push({ label: '', precio: 0, precioFmt: '' }); },
+    remove(i) {
+      this.items.splice(i, 1);
+      if (this.items.length === 0) this.add();
+    },
+    onPrecio(event, i) {
+      var raw = (event.target.value || '').toString().replace(/\D/g, '');
+      this.items[i].precio = raw ? parseFloat(raw) : 0;
+      this.items[i].precioFmt = this.items[i].precio
+        ? this.items[i].precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        : '';
+      event.target.value = this.items[i].precioFmt;
+    }
+  }));
+});
+</script>
 
 <?php require_once __DIR__ . '/../../src/layout/footer.php'; ?>

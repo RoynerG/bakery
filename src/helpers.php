@@ -99,6 +99,52 @@ if (!function_exists('parse_clp')) {
     }
 }
 
+if (!function_exists('get_config')) {
+    /**
+     * Lee un valor de la tabla `config`. Si no existe, devuelve $default.
+     */
+    function get_config(string $clave, ?string $default = null): ?string
+    {
+        static $cache = [];
+        if (array_key_exists($clave, $cache)) return $cache[$clave];
+        $row = \App\Database::getInstance()->fetchOne(
+            'SELECT valor FROM config WHERE clave = ?',
+            [$clave]
+        );
+        $val = $row ? ($row['valor'] ?? $default) : $default;
+        $cache[$clave] = $val;
+        return $val;
+    }
+}
+
+if (!function_exists('set_config')) {
+    /**
+     * Inserta/actualiza un valor en la tabla `config`.
+     */
+    function set_config(string $clave, ?string $valor): void
+    {
+        \App\Database::getInstance()->execute(
+            'INSERT INTO config (clave, valor) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE valor = VALUES(valor)',
+            [$clave, $valor]
+        );
+    }
+}
+
+if (!function_exists('categoria_variantes')) {
+    /**
+     * Devuelve los tamanos/precios compartidos de una categoria del
+     * catalogo (clasica, premium, destacado). Ordenados por 'orden'.
+     */
+    function categoria_variantes(string $tipo): array
+    {
+        return \App\Database::getInstance()->fetchAll(
+            'SELECT * FROM categoria_variantes WHERE tipo = ? ORDER BY orden ASC, id ASC',
+            [$tipo]
+        );
+    }
+}
+
 if (!function_exists('format_unidad')) {
     function format_unidad(string $unidad, float $cantidad): string
     {

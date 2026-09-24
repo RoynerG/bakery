@@ -249,3 +249,44 @@ CREATE TABLE IF NOT EXISTS `producto_variantes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SELECT 'Tablas de catalogo creadas (productos, producto_variantes).' AS aviso;
+
+-- ==========================================================
+-- Config y tamanos por categoria (v1.4)
+-- ==========================================================
+
+-- 16. Tabla config (clave-valor)
+CREATE TABLE IF NOT EXISTS `config` (
+  `clave`      VARCHAR(60) NOT NULL,
+  `valor`      TEXT,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`clave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `config` (`clave`, `valor`) VALUES
+  ('catalogo_tagline',   'PASTELERÍA Y REPOSTERÍA ARTESANAL'),
+  ('catalogo_instagram', '@dulce.rinconcito'),
+  ('catalogo_whatsapp',  '+56 9 4968 080'),
+  ('catalogo_cover_deco','🥐 🧁 🍰 🍪 🧁');
+
+-- 17. Tabla categoria_variantes
+CREATE TABLE IF NOT EXISTS `categoria_variantes` (
+  `id`      INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo`    ENUM('clasica','premium','destacado') NOT NULL,
+  `label`   VARCHAR(120) NOT NULL,
+  `precio`  DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `orden`   INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_tipo` (`tipo`, `orden`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `categoria_variantes` (`tipo`, `label`, `precio`, `orden`) VALUES
+  ('clasica', '10 personas', 23990, 0),
+  ('clasica', '15 personas', 27990, 1),
+  ('clasica', '20 personas', 31990, 2),
+  ('clasica', '30 personas', 44990, 3),
+  ('premium', '10 personas', 25990, 0),
+  ('premium', '15 personas', 29990, 1),
+  ('premium', '20 personas', 33990, 2),
+  ('premium', '30 personas', 46990, 3);
+
+SELECT 'Tablas config y categoria_variantes listas.' AS aviso;

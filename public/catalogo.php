@@ -28,7 +28,7 @@ $titulo = 'Catalogo';
   <meta name="description" content="Catalogo de productos de <?= e(APP_NAME) ?>: tortas clasicas, premium, kuchen, pie de limon y mas.">
 
   <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=5">
-  <link rel="stylesheet" href="<?= asset('css/catalogo.css') ?>?v=1">
+  <link rel="stylesheet" href="<?= asset('css/catalogo.css') ?>?v=2">
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,15 +59,15 @@ $titulo = 'Catalogo';
 
   <!-- HTML real de cada pagina (lo posiciona Three.js via CSS3DRenderer) -->
   <template id="tpl-page-cover">
-    <div class="page page-cover">
+    <div class="page page-cover" data-clickable="cover">
       <div class="page-inner">
         <div class="cover-bg"></div>
-        <div class="cover-deco">🥐🧁🍰🍪</div>
+        <div class="cover-deco"><?= e(get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁')) ?></div>
         <h1 class="cover-title"><span class="cover-sweet"><?= e(APP_NAME) ?></span></h1>
         <p class="cover-cat">CATÁLOGO</p>
-        <p class="cover-tag">PASTELERÍA Y REPOSTERÍA ARTESANAL</p>
-        <p class="cover-ig">@<?= e(APP_TAGLINE ?? 'dulce.rinconcito') ?></p>
-        <p class="cover-hint">Tocá la portada o pasá la página →</p>
+        <p class="cover-tag"><?= e(get_config('catalogo_tagline', 'PASTELERÍA Y REPOSTERÍA ARTESANAL')) ?></p>
+        <p class="cover-ig"><?= e(get_config('catalogo_instagram', '@dulce.rinconcito')) ?></p>
+        <p class="cover-hint">Tocá la portada para abrir →</p>
       </div>
     </div>
   </template>
@@ -143,11 +143,11 @@ $titulo = 'Catalogo';
         <?php endforeach; ?>
         <?php if (!empty($clasicas)): ?>
           <p class="clasica-nota">Cobertura crema o merengue</p>
-          <?php $tamanos = Producto::variantes((int)$clasicas[0]['id']); if (!empty($tamanos)): ?>
+          <?php $tamanosCat = categoria_variantes('clasica'); if (!empty($tamanosCat)): ?>
             <table class="size-table">
               <thead><tr><th>Tamaño</th><th>Valor</th></tr></thead>
               <tbody>
-                <?php foreach ($tamanos as $t): ?>
+                <?php foreach ($tamanosCat as $t): ?>
                   <tr><td class="size-label"><?= e($t['label']) ?></td><td class="size-price"><?= format_money((float)$t['precio']) ?></td></tr>
                 <?php endforeach; ?>
               </tbody>
@@ -177,11 +177,11 @@ $titulo = 'Catalogo';
           </section>
         <?php endforeach; ?>
         <?php if (!empty($premiums)): ?>
-          <?php $tamanos = Producto::variantes((int)$premiums[0]['id']); if (!empty($tamanos)): ?>
+          <?php $tamanosCat = categoria_variantes('premium'); if (!empty($tamanosCat)): ?>
             <table class="size-table">
               <thead><tr><th>Tamaño</th><th>Valor</th></tr></thead>
               <tbody>
-                <?php foreach ($tamanos as $t): ?>
+                <?php foreach ($tamanosCat as $t): ?>
                   <tr><td class="size-label"><?= e($t['label']) ?></td><td class="size-price"><?= format_money((float)$t['precio']) ?></td></tr>
                 <?php endforeach; ?>
               </tbody>
@@ -253,8 +253,8 @@ $titulo = 'Catalogo';
           <?php endif; ?>
         </div>
         <footer class="galeria-foot">
-          <span>📷 @<?= e(APP_TAGLINE ?? 'dulce.rinconcito') ?></span>
-          <span>📱 +56 9 4968 080</span>
+          <span>📷 <?= e(get_config('catalogo_instagram', '@dulce.rinconcito')) ?></span>
+          <span>📱 <?= e(get_config('catalogo_whatsapp', '+56 9 4968 080')) ?></span>
         </footer>
       </div>
     </div>
@@ -269,6 +269,6 @@ $titulo = 'Catalogo';
 
   <a href="<?= url('index.php') ?>" class="book-exit" title="Volver al sistema">← Sistema</a>
 
-  <script type="module" src="<?= asset('js/catalogo.js') ?>?v=1"></script>
+  <script type="module" src="<?= asset('js/catalogo.js') ?>?v=2"></script>
 </body>
 </html>

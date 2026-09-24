@@ -96,6 +96,46 @@ CREATE INDEX IF NOT EXISTS idx_notas_updated    ON notas(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notas_categoria  ON notas(categoria_id);
 
 -- ----------------------------------------------------------
+-- Tabla: config (clave-valor para ajustes editables)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS config (
+  clave       TEXT PRIMARY KEY,
+  valor       TEXT,
+  updated_at  TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Valores por defecto del catalogo publico
+INSERT OR IGNORE INTO config (clave, valor) VALUES
+  ('catalogo_tagline',   'PASTELERÍA Y REPOSTERÍA ARTESANAL'),
+  ('catalogo_instagram', '@dulce.rinconcito'),
+  ('catalogo_whatsapp',  '+56 9 4968 080'),
+  ('catalogo_cover_deco','🥐 🧁 🍰 🍪 🧁');
+
+-- ----------------------------------------------------------
+-- Tabla: categoria_variantes (tamanos/precios compartidos)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS categoria_variantes (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  tipo         TEXT NOT NULL CHECK (tipo IN ('clasica','premium','destacado')),
+  label        TEXT NOT NULL,
+  precio       REAL NOT NULL DEFAULT 0,
+  orden        INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_cv_tipo ON categoria_variantes(tipo, orden);
+
+-- Tamaños por defecto para tortas clasicas y premium
+INSERT OR IGNORE INTO categoria_variantes (tipo, label, precio, orden) VALUES
+  ('clasica', '10 personas', 23990, 0),
+  ('clasica', '15 personas', 27990, 1),
+  ('clasica', '20 personas', 31990, 2),
+  ('clasica', '30 personas', 44990, 3),
+  ('premium', '10 personas', 25990, 0),
+  ('premium', '15 personas', 29990, 1),
+  ('premium', '20 personas', 33990, 2),
+  ('premium', '30 personas', 46990, 3);
+
+-- ----------------------------------------------------------
 -- Tabla: productos (catalogo publico)
 -- ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS productos (
