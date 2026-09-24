@@ -326,6 +326,22 @@
   margin-bottom: 18px;
 }
 
+.catalog-item {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.catalog-item-img {
+  width: 86px;
+  height: 86px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 6px 18px rgba(190, 80, 60, 0.22);
+}
+
 .clasica-name {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 700;
@@ -565,5 +581,7 @@
   .page-title.big { font-size: 1.7rem; letter-spacing: 2px; }
   .destacado { grid-template-columns: 80px 1fr; gap: 12px; }
   .destacado-img { width: 80px; height: 80px; }
+  .catalog-item { grid-template-columns: 64px 1fr; gap: 10px; }
+  .catalog-item-img { width: 64px; height: 64px; }
   .size-table { width: 100%; }
 }

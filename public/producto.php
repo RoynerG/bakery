@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($accion === 'crear') {
             $nuevoId = Producto::create($_POST, $imagenFilename);
             flash('success', '🎉 Producto "' . $_POST['nombre'] . '" creado.');
-            redirect('producto.php?accion=editar&id=' . $nuevoId);
+            redirect('productos.php');
         }
         if ($accion === 'editar' && $id > 0) {
             Producto::update($id, $_POST, $imagenFilename, $hayNuevaImagen);
@@ -133,7 +133,7 @@ $titulo = $accion === 'crear' ? 'Nuevo producto' : 'Editar producto';
 
     <div class="flex items-center gap-2">
       <input type="checkbox" id="visible" name="visible" value="1"
-             <?= old('visible', !empty($productoEditar['visible']) ? '1' : '') === '1' ? 'checked' : '' ?>
+             <?= old('visible', $accion === 'crear' || !empty($productoEditar['visible']) ? '1' : '') === '1' ? 'checked' : '' ?>
              class="w-5 h-5 accent-rose-400">
       <label for="visible" class="text-sm font-bold text-chocolate-700">Visible en el catalogo publico</label>
     </div>

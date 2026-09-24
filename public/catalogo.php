@@ -28,7 +28,7 @@ $titulo = 'Catalogo';
   <meta name="description" content="Catalogo de productos de <?= e(APP_NAME) ?>: tortas clasicas, premium, kuchen, pie de limon y mas.">
 
   <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=5">
-  <link rel="stylesheet" href="<?= asset('css/catalogo.css') ?>?v=2">
+  <link rel="stylesheet" href="<?= asset('css/catalogo.css') ?>?v=3">
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -133,12 +133,17 @@ $titulo = 'Catalogo';
           // Por simplicidad, las mostramos todas juntas con un separador
         ?>
         <?php foreach ($clasicas as $p): ?>
-          <section class="clasica">
-            <h3 class="clasica-name"><?= e($p['nombre']) ?></h3>
-            <p class="clasica-rel"><b>Relleno:</b></p>
-            <?php if (!empty($p['descripcion'])): ?>
-              <p class="clasica-desc"><?= nl2br(e($p['descripcion'])) ?></p>
+          <section class="clasica catalog-item">
+            <?php if (!empty($p['imagen'])): ?>
+              <img class="catalog-item-img" src="<?= upload_url($p['imagen']) ?>" alt="<?= e($p['nombre']) ?>" loading="lazy">
             <?php endif; ?>
+            <div class="catalog-item-body">
+              <h3 class="clasica-name"><?= e($p['nombre']) ?></h3>
+              <p class="clasica-rel"><b>Relleno:</b></p>
+              <?php if (!empty($p['descripcion'])): ?>
+                <p class="clasica-desc"><?= nl2br(e($p['descripcion'])) ?></p>
+              <?php endif; ?>
+            </div>
           </section>
         <?php endforeach; ?>
         <?php if (!empty($clasicas)): ?>
@@ -169,11 +174,16 @@ $titulo = 'Catalogo';
         </p>
         <p class="clasica-nota">Cobertura de crema o merengue.</p>
         <?php foreach ($premiums as $p): ?>
-          <section class="clasica">
-            <h3 class="clasica-name"><?= e($p['nombre']) ?></h3>
-            <?php if (!empty($p['descripcion'])): ?>
-              <p class="clasica-desc"><?= nl2br(e($p['descripcion'])) ?></p>
+          <section class="clasica catalog-item">
+            <?php if (!empty($p['imagen'])): ?>
+              <img class="catalog-item-img" src="<?= upload_url($p['imagen']) ?>" alt="<?= e($p['nombre']) ?>" loading="lazy">
             <?php endif; ?>
+            <div class="catalog-item-body">
+              <h3 class="clasica-name"><?= e($p['nombre']) ?></h3>
+              <?php if (!empty($p['descripcion'])): ?>
+                <p class="clasica-desc"><?= nl2br(e($p['descripcion'])) ?></p>
+              <?php endif; ?>
+            </div>
           </section>
         <?php endforeach; ?>
         <?php if (!empty($premiums)): ?>

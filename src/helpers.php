@@ -17,7 +17,8 @@ if (!function_exists('url')) {
     /** Genera una URL relativa al directorio público */
     function url(string $path = ''): string
     {
-        $base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        $base = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+        $base = $base === '/' || $base === '.' ? '' : rtrim($base, '/');
         return $base . '/' . ltrim($path, '/');
     }
 }

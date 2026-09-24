@@ -63,7 +63,8 @@ final class Producto
     public static function create(array $data, ?string $imagenFilename): int
     {
         self::validate($data);
-        $slug = self::ensureUniqueSlug($data['slug'] ?: self::slugify($data['nombre']));
+        $slugBase = trim((string)($data['slug'] ?? ''));
+        $slug = self::ensureUniqueSlug($slugBase !== '' ? $slugBase : self::slugify($data['nombre']));
 
         $db = Database::getInstance();
         $db->execute(
@@ -91,7 +92,8 @@ final class Producto
     public static function update(int $id, array $data, ?string $imagenFilename, bool $reemplazarImagen): bool
     {
         self::validate($data);
-        $slug = self::ensureUniqueSlug($data['slug'] ?: self::slugify($data['nombre']), $id);
+        $slugBase = trim((string)($data['slug'] ?? ''));
+        $slug = self::ensureUniqueSlug($slugBase !== '' ? $slugBase : self::slugify($data['nombre']), $id);
 
         $imagenSql = $imagenFilename !== null ? ', imagen = ?' : '';
         $params = [
