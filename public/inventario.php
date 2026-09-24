@@ -154,12 +154,12 @@ $titulo = 'Inventario';
           </div>
           <div>
             <label class="block text-xs font-bold text-chocolate-700 mb-1">Precio de compra</label>
-            <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-chocolate-500 font-bold">$</span>
+            <div class="flex items-stretch gap-2">
+              <span class="inline-flex items-center justify-center px-3 text-chocolate-700 font-bold bg-rose-50 border-2 border-rose-100 rounded-2xl">$</span>
               <input type="number" name="precio_compra" step="0.01" min="0" required
                      x-model.number="precio"
                      value="<?= e(old('precio_compra', $ingredienteEditar['precio_compra'] ?? '0')) ?>"
-                     class="pl-8"
+                     class="flex-1"
                      placeholder="0.00">
             </div>
           </div>
