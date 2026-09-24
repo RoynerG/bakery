@@ -1,0 +1,537 @@
+/* ============================================
+   Catalogo publico - Libro 3D (Three.js CSS3D)
+   ============================================ */
+
+#book-scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  perspective: 2200px;
+  background: radial-gradient(ellipse at center, #fff5f0 0%, #f3dec3 70%, #d9b88a 100%);
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Wrapper del libro (rotado por Three.js) */
+#book-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+/* Cada "pagina" del libro: un plano 3D que puede rotar */
+.book-page {
+  position: absolute;
+  width: 600px;
+  height: 800px;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transition: transform 0.95s cubic-bezier(0.45, 0.05, 0.25, 1);
+  backface-visibility: hidden;
+}
+
+/* Pagina girada (vista desde el otro lado) */
+.book-page.flipped {
+  transform: rotateY(-180deg);
+}
+
+/* Cara de atras de cada pagina (visible cuando esta girada) */
+.book-page .page-back {
+  position: absolute;
+  inset: 0;
+  background: #fff8ef;
+  border-radius: 4px 16px 16px 4px;
+  box-shadow: inset 8px 0 18px rgba(190, 110, 60, 0.18),
+              0 12px 40px rgba(0,0,0,0.18);
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+}
+
+/* Cara frontal */
+.book-page .page-front {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(1px);
+}
+
+/* Estilo comun de las paginas HTML (insertadas por Three.js) */
+.book-leaf {
+  transform-origin: 0% 50%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px 16px 16px 4px;
+  overflow: hidden;
+  background: #fffaf2;
+  box-shadow: inset 8px 0 18px rgba(190, 110, 60, 0.18),
+              0 12px 40px rgba(0,0,0,0.22);
+  width: 100%;
+  height: 100%;
+}
+
+.page-inner {
+  position: absolute;
+  inset: 0;
+  padding: 50px 55px 70px 75px;
+  overflow-y: auto;
+  font-family: 'Quicksand', sans-serif;
+  color: #5d2f0c;
+}
+
+/* ============================================
+   Paginas de contenido
+   ============================================ */
+
+/* --- COVER --- */
+.page-cover {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.55) 60%, rgba(255,255,255,0.92) 100%),
+    radial-gradient(ellipse at top, #ffe9d6 0%, #f7d3a8 60%, #c98c5e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-cover .page-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 30px;
+}
+
+.cover-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(255,255,255,0.5), transparent 35%),
+    radial-gradient(circle at 80% 75%, rgba(255,255,255,0.4), transparent 35%);
+  pointer-events: none;
+}
+
+.cover-deco {
+  position: absolute;
+  inset: 0;
+  font-size: 3rem;
+  opacity: 0.45;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 30px 40px;
+  letter-spacing: 16px;
+}
+
+.cover-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  color: #c93a73;
+  font-size: 3.4rem;
+  line-height: 1.1;
+  margin: 0 0 8px;
+  text-shadow: 2px 2px 4px rgba(255,255,255,0.7);
+  z-index: 2;
+}
+
+.cover-sweet {
+  font-family: 'Pacifico', cursive;
+  font-size: 1em;
+  color: #c93a73;
+}
+
+.cover-cat {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 8px;
+  color: #e8879d;
+  font-size: 1.4rem;
+  margin: 12px 0 6px;
+  z-index: 2;
+}
+
+.cover-tag {
+  letter-spacing: 3px;
+  font-size: 0.7rem;
+  color: #8b4513;
+  margin: 14px 0 28px;
+  z-index: 2;
+}
+
+.cover-ig {
+  color: #e8879d;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  z-index: 2;
+}
+
+.cover-hint {
+  position: absolute;
+  bottom: 40px;
+  font-size: 0.75rem;
+  color: #c98c5e;
+  letter-spacing: 1px;
+  z-index: 2;
+}
+
+/* --- PAGINAS EN BLANCO (entre secciones) --- */
+.page-blank {
+  background: #fffaf2;
+}
+
+/* --- HEADER de pagina de contenido --- */
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.page-emoji {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  color: #c93a73;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.page-title.big {
+  font-size: 2.4rem;
+  letter-spacing: 4px;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.page-lead {
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #8b4513;
+  margin: 0 auto 30px;
+  max-width: 440px;
+}
+
+/* --- DESTACADOS (Kuchen, Pie, etc.) --- */
+.destacados-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.destacado {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.destacado-img {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 6px 20px rgba(190, 80, 60, 0.25);
+}
+
+.destacado-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.destacado-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  color: #8b4513;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  margin: 0 0 8px;
+}
+
+.destacado-desc {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #5d2f0c;
+  margin: 0 0 12px;
+}
+
+.variantes {
+  width: 100%;
+  font-size: 0.82rem;
+  border-collapse: collapse;
+}
+
+.variantes td {
+  padding: 3px 0;
+}
+
+.var-label {
+  color: #5d2f0c;
+  width: 50%;
+}
+
+.var-price {
+  color: #c93a73;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* --- SECCIONES CLASICA / PREMIUM --- */
+.clasica {
+  margin-bottom: 18px;
+}
+
+.clasica-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  color: #8b4513;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.clasica-rel {
+  font-size: 0.78rem;
+  color: #8b4513;
+  margin: 0 0 4px;
+}
+
+.clasica-desc {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #5d2f0c;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.clasica-nota {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5d2f0c;
+  margin: 24px 0 16px;
+  font-style: italic;
+}
+
+/* Tabla de tamaños */
+.size-table {
+  margin: 18px auto 0;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  color: #5d2f0c;
+  width: 70%;
+}
+
+.size-table th {
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 6px;
+  font-weight: 500;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: #8b4513;
+}
+
+.size-table td {
+  padding: 6px 12px;
+  text-align: center;
+}
+
+.size-table td.size-label {
+  color: #5d2f0c;
+  font-style: italic;
+}
+
+.size-table td.size-price {
+  color: #c93a73;
+  font-weight: 700;
+}
+
+/* --- EXTRAS --- */
+.extras-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 16px;
+}
+
+.extras-table td {
+  padding: 8px 6px;
+}
+
+.extra-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  color: #8b4513;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.extra-label {
+  color: #5d2f0c;
+  font-style: italic;
+  font-size: 0.82rem;
+}
+
+.extra-plus {
+  text-align: center;
+  color: #c93a73;
+  width: 24px;
+}
+
+.extra-price {
+  text-align: right;
+  color: #c93a73;
+  font-weight: 700;
+}
+
+/* --- GALERIA --- */
+.galeria-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.galeria-fig {
+  margin: 0;
+  background: #fff;
+  padding: 6px;
+  border: 1px solid #f0e0d0;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: rotate(var(--rot, 0deg));
+}
+
+.galeria-fig:nth-child(2) { --rot: -2deg; }
+.galeria-fig:nth-child(3) { --rot: 1.5deg; }
+.galeria-fig:nth-child(4) { --rot: -1deg; }
+
+.galeria-fig img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.galeria-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #c93a73;
+  border-top: 1px solid #f0e0d0;
+  padding-top: 16px;
+}
+
+.empty-msg {
+  text-align: center;
+  font-size: 1rem;
+  color: #c98c5e;
+  margin-top: 80px;
+}
+
+/* ============================================
+   Controles del libro
+   ============================================ */
+.book-controls {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(255, 250, 242, 0.92);
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 8px 32px rgba(190, 80, 60, 0.25);
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.book-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #c93a73;
+  background: #fff;
+  color: #c93a73;
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.book-btn:hover:not(:disabled) {
+  background: #c93a73;
+  color: #fff;
+  transform: scale(1.06);
+}
+
+.book-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.book-counter {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #5d2f0c;
+  min-width: 60px;
+  text-align: center;
+}
+
+.book-exit {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #c93a73;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  font-size: 0.85rem;
+  z-index: 100;
+  transition: all 0.2s;
+}
+
+.book-exit:hover {
+  background: #c93a73;
+  color: #fff;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 720px) {
+  .page {
+    width: 90vw !important;
+    height: 75vh !important;
+  }
+  .page-inner { padding: 30px 24px 40px 36px; }
+  .cover-title { font-size: 2.2rem; }
+  .page-title.big { font-size: 1.7rem; letter-spacing: 2px; }
+  .destacado { grid-template-columns: 80px 1fr; gap: 12px; }
+  .destacado-img { width: 80px; height: 80px; }
+  .size-table { width: 100%; }
+}

@@ -105,6 +105,42 @@ CREATE TABLE `categorias` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------------------------------------
+-- Tabla: productos (catalogo publico)
+-- ----------------------------------------------------------
+CREATE TABLE `productos` (
+  `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nombre`       VARCHAR(160) NOT NULL,
+  `slug`         VARCHAR(180) NOT NULL,
+  `descripcion`  TEXT,
+  `tipo`         ENUM('destacado','clasica','premium','extra','galeria') NOT NULL DEFAULT 'clasica',
+  `imagen`       VARCHAR(255) DEFAULT NULL,
+  `precio_desde` DECIMAL(12,2) DEFAULT NULL,
+  `visible`      TINYINT(1) NOT NULL DEFAULT 1,
+  `orden`        INT NOT NULL DEFAULT 0,
+  `created_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_slug` (`slug`),
+  KEY `idx_tipo` (`tipo`, `orden`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: producto_variantes (tamanos / precios)
+-- ----------------------------------------------------------
+CREATE TABLE `producto_variantes` (
+  `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `producto_id` INT UNSIGNED NOT NULL,
+  `label`       VARCHAR(120) NOT NULL,
+  `precio`      DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `orden`       INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_producto` (`producto_id`, `orden`),
+  CONSTRAINT `fk_variante_producto`
+    FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
 -- Tabla: notas (bloc de notas del admin)
 -- ----------------------------------------------------------
 CREATE TABLE `notas` (

@@ -63,6 +63,7 @@ $current = basename($_SERVER['SCRIPT_NAME']);
             ['index.php',     '🏠', 'Inicio'],
             ['recetas.php',   '🍰', 'Recetas'],
             ['inventario.php','📦', 'Inventario'],
+            ['productos.php', '📖', 'Catalogo'],
             ['notas.php',     '📝', 'Notas'],
             ['agenda.php',    '📅', 'Agenda'],
           ];

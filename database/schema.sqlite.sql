@@ -96,6 +96,40 @@ CREATE INDEX IF NOT EXISTS idx_notas_updated    ON notas(updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notas_categoria  ON notas(categoria_id);
 
 -- ----------------------------------------------------------
+-- Tabla: productos (catalogo publico)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS productos (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre        TEXT NOT NULL,
+  slug          TEXT NOT NULL UNIQUE,
+  descripcion   TEXT,
+  tipo          TEXT NOT NULL DEFAULT 'clasica'
+                CHECK (tipo IN ('destacado','clasica','premium','extra','galeria')),
+  imagen        TEXT,
+  precio_desde  REAL,
+  visible       INTEGER NOT NULL DEFAULT 1,
+  orden         INTEGER NOT NULL DEFAULT 0,
+  created_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_productos_tipo ON productos(tipo, orden);
+
+-- ----------------------------------------------------------
+-- Tabla: producto_variantes (tamanos / precios)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS producto_variantes (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  producto_id  INTEGER NOT NULL,
+  label        TEXT NOT NULL,
+  precio       REAL NOT NULL DEFAULT 0,
+  orden        INTEGER NOT NULL DEFAULT 0,
+  FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_variantes_producto ON producto_variantes(producto_id, orden);
+
+-- ----------------------------------------------------------
 -- Tabla: agenda (eventos / citas)
 -- ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS agenda (
