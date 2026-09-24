@@ -11,6 +11,10 @@ require_once __DIR__ . '/../config/config.php';
 
 // 2. Helpers
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/debug.php';
+
+// 2.1 Debug: agregar ?debug=1 a la URL para ver errores y stack trace
+debug_install();
 
 // 3. Autoload manual de clases del namespace App\
 spl_autoload_register(function (string $class) {

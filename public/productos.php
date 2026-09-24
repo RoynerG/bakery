@@ -91,7 +91,7 @@ $titulo = 'Productos del catalogo';
     </p>
   </div>
   <div class="flex gap-2">
-    <a href="<?= url('configuracion.php') ?>" class="btn btn-secondary">
+    <a href="<?= url('usuarios.php#catalogo') ?>" class="btn btn-secondary">
       <span>⚙️</span> Configuracion
     </a>
     <a href="<?= url('producto.php?accion=crear') ?>" class="btn btn-primary">

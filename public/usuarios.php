@@ -54,6 +54,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash($ok ? 'success' : 'error', $ok ? '🗑️ Usuario eliminado.' : '😢 No se pudo eliminar.');
             redirect('usuarios.php');
         }
+        if ($accion === 'guardar_catalogo') {
+            try {
+                \App\Database::getInstance()->fetchOne('SELECT 1 FROM config LIMIT 1');
+            } catch (Throwable $e) {
+                throw new RuntimeException(
+                    'La tabla `config` aun no existe. Corré la migracion SQL '
+                    . '(secciones 16-17 de database/migrate_mysql.sql) en phpMyAdmin '
+                    . 'antes de guardar.'
+                );
+            }
+            foreach (['catalogo_tagline', 'catalogo_instagram', 'catalogo_whatsapp', 'catalogo_cover_deco'] as $clave) {
+                set_config($clave, $_POST[$clave] ?? '');
+            }
+            flash('success', '✅ Configuracion del catalogo guardada.');
+            redirect('usuarios.php#catalogo');
+        }
     } catch (Throwable $e) {
         keep_old($_POST);
         flash('error', $e->getMessage());
@@ -72,7 +88,7 @@ if ($accion === 'editar' && $id > 0) {
 }
 
 $usuarios = Usuario::all();
-$titulo   = 'Usuarios';
+$titulo   = 'Usuarios y configuracion';
 ?>
 <?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
@@ -215,4 +231,70 @@ $titulo   = 'Usuarios';
 <?php endif; ?>
 
 <?php clear_old(); ?>
+
+<!-- ============================================
+     Configuracion del catalogo publico
+     ============================================ -->
+<?php
+  $tagline   = get_config('catalogo_tagline', '');
+  $instagram = get_config('catalogo_instagram', '');
+  $whatsapp  = get_config('catalogo_whatsapp', '');
+  $coverDeco = get_config('catalogo_cover_deco', '');
+?>
+<section id="catalogo" class="mt-12">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="font-bold text-chocolate-900 text-xl">📖 Configuracion del catalogo</h2>
+    <a href="<?= url('catalogo.php') ?>" target="_blank" class="btn btn-secondary !py-1 !px-3 !text-xs">
+      Ver libro 3D →
+    </a>
+  </div>
+  <p class="text-sm text-chocolate-500 mb-4 max-w-2xl">
+    Estos valores se muestran en la portada y galeria del libro 3D
+    publico. Cambialos aca sin tocar codigo.
+  </p>
+
+  <form method="post" action="<?= url('usuarios.php?accion=guardar_catalogo') ?>"
+        class="card max-w-2xl space-y-5">
+    <?= csrf_field() ?>
+
+    <div>
+      <label class="block text-sm font-bold text-chocolate-700 mb-1">Tagline de la portada</label>
+      <input type="text" name="catalogo_tagline" maxlength="120"
+             value="<?= e($tagline) ?>"
+             placeholder="PASTELERÍA Y REPOSTERÍA ARTESANAL">
+      <p class="text-xs text-chocolate-500 mt-1">Texto debajo del titulo en la portada.</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold text-chocolate-700 mb-1">Instagram / Handle</label>
+      <input type="text" name="catalogo_instagram" maxlength="60"
+             value="<?= e($instagram) ?>"
+             placeholder="@dulce.rinconcito">
+      <p class="text-xs text-chocolate-500 mt-1">Aparece en portada y galeria.</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold text-chocolate-700 mb-1">WhatsApp / Telefono</label>
+      <input type="text" name="catalogo_whatsapp" maxlength="60"
+             value="<?= e($whatsapp) ?>"
+             placeholder="+56 9 4968 080">
+      <p class="text-xs text-chocolate-500 mt-1">Aparece en la galeria de fotos final.</p>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold text-chocolate-700 mb-1">Emojis decorativos de la portada</label>
+      <input type="text" name="catalogo_cover_deco" maxlength="80"
+             value="<?= e($coverDeco) ?>"
+             placeholder="🥐 🧁 🍰 🍪 🧁">
+      <p class="text-xs text-chocolate-500 mt-1">Emojis que aparecen en la portada del libro.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 pt-2">
+      <button type="submit" class="btn btn-primary">
+        <span>💾</span> Guardar configuracion
+      </button>
+    </div>
+  </form>
+</section>
+
 <?php require_once __DIR__ . '/../src/layout/footer.php'; ?>
