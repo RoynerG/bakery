@@ -170,10 +170,13 @@ $titulo = 'Productos del catalogo';
                   <?php endif; ?>
                 </td>
                 <td>
-                  <a href="<?= url('productos.php?accion=toggle&id=' . (int)$p['id']) ?>"
-                     class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold <?= !empty($p['visible']) ? 'bg-mint-100 text-chocolate-700' : 'bg-rose-100 text-chocolate-700' ?>">
-                    <?= !empty($p['visible']) ? '✓ Visible' : '✗ Oculto' ?>
-                  </a>
+                  <form method="post" action="<?= url('productos.php?accion=toggle&id=' . (int)$p['id']) ?>" class="inline">
+                    <?= csrf_field() ?>
+                    <button type="submit"
+                            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold <?= !empty($p['visible']) ? 'bg-mint-100 text-chocolate-700' : 'bg-rose-100 text-chocolate-700' ?>">
+                      <?= !empty($p['visible']) ? '✓ Visible' : '✗ Oculto' ?>
+                    </button>
+                  </form>
                 </td>
                 <td class="text-sm text-chocolate-700"><?= (int)$p['orden'] ?></td>
                 <td class="text-right">

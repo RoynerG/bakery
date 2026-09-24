@@ -123,11 +123,17 @@ $titulo = $accion === 'crear' ? 'Nuevo producto' : 'Editar producto';
       <?php if (!empty($productoEditar['imagen'])): ?>
         <div class="mb-3 flex items-center gap-3">
           <img src="<?= upload_url($productoEditar['imagen']) ?>" alt="<?= e($productoEditar['nombre']) ?>"
+               id="producto-imagen-preview"
                class="h-20 w-20 rounded-xl object-cover border-2 border-rose-100">
           <span class="text-xs text-chocolate-500">Imagen actual. Subi una nueva para reemplazarla.</span>
         </div>
+      <?php else: ?>
+        <img src="" alt="Vista previa de la imagen"
+             id="producto-imagen-preview"
+             class="hidden mb-3 h-20 w-20 rounded-xl object-cover border-2 border-rose-100">
       <?php endif; ?>
-      <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp"
+      <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp,image/gif"
+             onchange="previewProductoImagen(event)"
              class="block w-full text-sm text-chocolate-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-rose-100 file:text-rose-700 file:font-semibold hover:file:bg-rose-200">
     </div>
 
@@ -196,6 +202,14 @@ document.addEventListener('alpine:init', () => {
     }
   }));
 });
+
+function previewProductoImagen(event) {
+  var file = event.target.files && event.target.files[0];
+  var preview = document.getElementById('producto-imagen-preview');
+  if (!file || !preview) return;
+  preview.src = URL.createObjectURL(file);
+  preview.classList.remove('hidden');
+}
 </script>
 
 <?php require_once __DIR__ . '/../src/layout/footer.php'; ?>

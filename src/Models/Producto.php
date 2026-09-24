@@ -92,6 +92,11 @@ final class Producto
     public static function update(int $id, array $data, ?string $imagenFilename, bool $reemplazarImagen): bool
     {
         self::validate($data);
+        $anterior = self::find($id);
+        if (!$anterior) {
+            throw new \InvalidArgumentException('Producto no encontrado.');
+        }
+
         $slugBase = trim((string)($data['slug'] ?? ''));
         $slug = self::ensureUniqueSlug($slugBase !== '' ? $slugBase : self::slugify($data['nombre']), $id);
 
@@ -122,7 +127,6 @@ final class Producto
         );
 
         if ($reemplazarImagen && $imagenFilename !== null) {
-            $anterior = self::find($id);
             if ($anterior && !empty($anterior['imagen']) && $anterior['imagen'] !== $imagenFilename) {
                 self::borrarImagen($anterior['imagen']);
             }
