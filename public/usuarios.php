@@ -1,6 +1,6 @@
 <?php
 /**
- * Pagina: Gestion de Usuarios + Configuracion del catalogo (tabs).
+ * Pagina: Gestion de Usuarios.
  */
 declare(strict_types=1);
 
@@ -15,8 +15,6 @@ Auth::require();
 $accion = $_GET['accion'] ?? 'listar';
 $id     = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $yo     = Auth::user();
-$tab    = $_GET['tab'] ?? 'users';
-if (!in_array($tab, ['users', 'catalogo'], true)) $tab = 'users';
 
 // ============ POST ============
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -29,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['nombre'] ?? null
             );
             flash('success', '👤 Usuario creado.');
-            redirect('usuarios.php?tab=users');
+            redirect('usuarios.php');
         }
         if ($accion === 'editar' && $id > 0) {
             Usuario::update(
@@ -41,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['auth']['nombre'] = trim($_POST['nombre'] ?? '') ?: null;
             }
             flash('success', '✅ Usuario actualizado.');
-            redirect('usuarios.php?tab=users');
+            redirect('usuarios.php');
         }
         if ($accion === 'eliminar' && $id > 0) {
             if ($yo && (int)$yo['id'] === $id) {
@@ -52,87 +50,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $ok = Usuario::delete($id);
             flash($ok ? 'success' : 'error', $ok ? '🗑️ Usuario eliminado.' : '😢 No se pudo eliminar.');
-            redirect('usuarios.php?tab=users');
-        }
-        if ($accion === 'guardar_catalogo') {
-            try {
-                \App\Database::getInstance()->fetchOne('SELECT 1 FROM config LIMIT 1');
-            } catch (Throwable $e) {
-                throw new RuntimeException(
-                    'La tabla `config` aun no existe. Corré la migracion SQL '
-                    . '(secciones 16-17 de database/migrate_mysql.sql) en phpMyAdmin '
-                    . 'antes de guardar.'
-                );
-            }
-            foreach (['catalogo_tagline', 'catalogo_instagram', 'catalogo_whatsapp', 'catalogo_cover_deco'] as $clave) {
-                set_config($clave, $_POST[$clave] ?? '');
-            }
-            flash('success', '✅ Configuracion del catalogo guardada.');
-            redirect('usuarios.php?tab=catalogo');
+            redirect('usuarios.php');
         }
     } catch (Throwable $e) {
         keep_old($_POST);
         flash('error', $e->getMessage());
-        redirect('usuarios.php?tab=' . ($accion === 'guardar_catalogo' ? 'catalogo' : 'users')
-            . ($accion === 'editar' ? '&accion=editar&id=' . $id : ''));
+        redirect('usuarios.php' . ($accion === 'editar' ? '?accion=editar&id=' . $id : ''));
     }
 }
 
 $usuarioEditar = null;
-if ($accion === 'editar' && $id > 0 && $tab === 'users') {
+if ($accion === 'editar' && $id > 0) {
     $usuarioEditar = Usuario::find($id);
     if (!$usuarioEditar) {
         flash('error', 'El usuario no existe.');
-        redirect('usuarios.php?tab=users');
+        redirect('usuarios.php');
     }
 }
 
 $usuarios = Usuario::all();
-$titulo   = 'Usuarios y configuracion';
-
-// Datos de la pestana de configuracion
-$tagline   = get_config('catalogo_tagline', 'PASTELERÍA Y REPOSTERÍA ARTESANAL');
-$instagram = get_config('catalogo_instagram', '@dulce.rinconcito');
-$whatsapp  = get_config('catalogo_whatsapp', '+56 9 4968 080');
-$coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
+$titulo   = 'Usuarios';
 ?>
 <?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
-<!-- Toda la pagina en un unico scope Alpine para que las tabs funcionen -->
-<section x-data="{ tab: '<?= e($tab) ?>' }">
-
+<section>
   <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
     <div>
-      <h1 class="section-title">Usuarios y configuracion</h1>
-      <p class="text-chocolate-700 mt-2">Administra las cuentas del sistema y la portada del catalogo 3D. 👤📖</p>
+      <h1 class="section-title">Usuarios</h1>
+      <p class="text-chocolate-700 mt-2">Administra las cuentas que pueden entrar al sistema.</p>
     </div>
-    <a href="<?= url('catalogo.php') ?>" target="_blank"
-       class="btn btn-secondary !py-2 !text-xs self-start sm:self-auto">
-      📖 Ver libro 3D publico →
-    </a>
   </div>
 
-  <!-- Pestanas -->
-  <div class="flex gap-1 border-b-2 border-rose-100 mb-6 overflow-x-auto">
-    <button type="button" @click="tab = 'users'"
-            :class="tab === 'users'
-              ? 'border-rose-400 text-rose-500 bg-rose-50/50'
-              : 'border-transparent text-chocolate-500 hover:text-rose-400 hover:bg-rose-50/30'"
-            class="px-5 py-3 font-bold text-sm border-b-4 -mb-0.5 transition-colors whitespace-nowrap rounded-t-xl">
-      👤 Usuarios
-      <span class="ml-2 text-xs font-normal opacity-70">(<?= count($usuarios) ?>)</span>
-    </button>
-    <button type="button" @click="tab = 'catalogo'"
-            :class="tab === 'catalogo'
-              ? 'border-rose-400 text-rose-500 bg-rose-50/50'
-              : 'border-transparent text-chocolate-500 hover:text-rose-400 hover:bg-rose-50/30'"
-            class="px-5 py-3 font-bold text-sm border-b-4 -mb-0.5 transition-colors whitespace-nowrap rounded-t-xl">
-      📖 Configuracion del catalogo
-    </button>
-  </div>
-
-  <!-- TAB: USUARIOS -->
-  <div x-show="tab === 'users'" x-cloak>
     <?php if ($accion === 'crear' || $accion === 'editar'): ?>
       <section class="card max-w-2xl mx-auto mb-10">
         <h2 class="font-sweet text-2xl text-rose-500 mb-1">
@@ -145,7 +93,7 @@ $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
         </p>
 
         <form method="post"
-              action="<?= url('usuarios.php?tab=users&accion=' . $accion . ($id ? '&id=' . $id : '')) ?>"
+              action="<?= url('usuarios.php?accion=' . $accion . ($id ? '&id=' . $id : '')) ?>"
               class="space-y-5" autocomplete="off">
           <?= csrf_field() ?>
 
@@ -195,13 +143,13 @@ $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
             <button type="submit" class="btn btn-primary">
               <span>💾</span> <?= $accion === 'crear' ? 'Crear usuario' : 'Actualizar' ?>
             </button>
-            <a href="<?= url('usuarios.php?tab=users') ?>" class="btn btn-ghost">Cancelar</a>
+            <a href="<?= url('usuarios.php') ?>" class="btn btn-ghost">Cancelar</a>
           </div>
         </form>
       </section>
     <?php else: ?>
       <div class="flex justify-end mb-4">
-        <a href="<?= url('usuarios.php?tab=users&accion=crear') ?>" class="btn btn-primary">
+        <a href="<?= url('usuarios.php?accion=crear') ?>" class="btn btn-primary">
           <span>➕</span> Nuevo usuario
         </a>
       </div>
@@ -210,7 +158,7 @@ $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
         <div class="card text-center py-16">
           <div class="text-7xl mb-4 animate-wiggle inline-block">👤</div>
           <h3 class="font-sweet text-2xl text-rose-500 mb-2">No hay usuarios</h3>
-          <a href="<?= url('usuarios.php?tab=users&accion=crear') ?>" class="btn btn-primary">
+          <a href="<?= url('usuarios.php?accion=crear') ?>" class="btn btn-primary">
             <span>➕</span> Crear el primero
           </a>
         </div>
@@ -242,12 +190,12 @@ $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
                 <?php endif; ?>
               </div>
               <div class="mt-4 flex gap-2">
-                <a href="<?= url('usuarios.php?tab=users&accion=editar&id=' . (int)$u['id']) ?>"
+                <a href="<?= url('usuarios.php?accion=editar&id=' . (int)$u['id']) ?>"
                    class="btn btn-secondary flex-1 justify-center !py-2 !text-xs">
                   <span>✏️</span> Editar
                 </a>
                 <?php if (!$soyYo && count($usuarios) > 1): ?>
-                  <form method="post" action="<?= url('usuarios.php?tab=users&accion=eliminar&id=' . (int)$u['id']) ?>"
+                  <form method="post" action="<?= url('usuarios.php?accion=eliminar&id=' . (int)$u['id']) ?>"
                         x-data="confirmDelete('¿Eliminar al usuario @<?= e($u['usuario']) ?>?\n\nSe perdera el acceso de esta persona.')" class="flex-1">
                     <?= csrf_field() ?>
                     <button type="submit" @click.prevent="ask(() => $event.target.form.submit())"
@@ -262,59 +210,6 @@ $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
         </div>
       <?php endif; ?>
     <?php endif; ?>
-  </div>
-
-  <!-- TAB: CONFIGURACION DEL CATALOGO -->
-  <div x-show="tab === 'catalogo'" x-cloak>
-    <p class="text-sm text-chocolate-500 mb-4 max-w-2xl">
-      Estos valores se muestran en la portada y galeria del libro 3D
-      publico. Cambialos aca sin tocar codigo.
-    </p>
-
-    <form method="post" action="<?= url('usuarios.php?tab=catalogo&accion=guardar_catalogo') ?>"
-          class="card max-w-2xl space-y-5">
-      <?= csrf_field() ?>
-
-      <div>
-        <label class="block text-sm font-bold text-chocolate-700 mb-1">Tagline de la portada</label>
-        <input type="text" name="catalogo_tagline" maxlength="120"
-               value="<?= e($tagline) ?>"
-               placeholder="PASTELERIA Y REPOSTERIA ARTESANAL">
-        <p class="text-xs text-chocolate-500 mt-1">Texto debajo del titulo en la portada.</p>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-chocolate-700 mb-1">Instagram / Handle</label>
-        <input type="text" name="catalogo_instagram" maxlength="60"
-               value="<?= e($instagram) ?>"
-               placeholder="@dulce.rinconcito">
-        <p class="text-xs text-chocolate-500 mt-1">Aparece en portada y galeria.</p>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-chocolate-700 mb-1">WhatsApp / Telefono</label>
-        <input type="text" name="catalogo_whatsapp" maxlength="60"
-               value="<?= e($whatsapp) ?>"
-               placeholder="+56 9 4968 080">
-        <p class="text-xs text-chocolate-500 mt-1">Aparece en la galeria de fotos final.</p>
-      </div>
-
-      <div>
-        <label class="block text-sm font-bold text-chocolate-700 mb-1">Emojis decorativos de la portada</label>
-        <input type="text" name="catalogo_cover_deco" maxlength="80"
-               value="<?= e($coverDeco) ?>"
-               placeholder="🥐 🧁 🍰 🍪 🧁">
-        <p class="text-xs text-chocolate-500 mt-1">Emojis que aparecen en la portada del libro.</p>
-      </div>
-
-      <div class="flex flex-wrap gap-3 pt-2">
-        <button type="submit" class="btn btn-primary">
-          <span>💾</span> Guardar configuracion
-        </button>
-      </div>
-    </form>
-  </div>
-
 </section>
 
 <?php clear_old(); ?>

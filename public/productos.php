@@ -48,6 +48,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Orden actualizado.');
             redirect('productos.php');
         }
+        if ($accion === 'guardar_catalogo') {
+            try {
+                Database::getInstance()->fetchOne('SELECT 1 FROM config LIMIT 1');
+            } catch (Throwable $e) {
+                throw new RuntimeException(
+                    'La tabla `config` aun no existe. Corre la migracion SQL '
+                    . '(secciones 16-17 de database/migrate_mysql.sql) en phpMyAdmin '
+                    . 'antes de guardar.'
+                );
+            }
+            foreach (['catalogo_tagline', 'catalogo_instagram', 'catalogo_whatsapp', 'catalogo_cover_deco'] as $clave) {
+                set_config($clave, $_POST[$clave] ?? '');
+            }
+            flash('success', 'Configuracion del catalogo guardada.');
+            redirect('productos.php');
+        }
         // Tamanos por categoria: guardar lote
         if ($accion === 'guardar_tamanos' && isset($_POST['tipo_cat'])) {
             $tipoCat = $_POST['tipo_cat'];
@@ -83,10 +99,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $productos = Producto::all();
 $titulo = 'Productos del catalogo';
+$tagline   = get_config('catalogo_tagline', 'PASTELERÍA Y REPOSTERÍA ARTESANAL');
+$instagram = get_config('catalogo_instagram', '@dulce.rinconcito');
+$whatsapp  = get_config('catalogo_whatsapp', '+56 9 4968 080');
+$coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
+$crearTipos = [
+  'destacado' => ['Destacado', 'Portada y pagina de destacados.'],
+  'clasica'   => ['Torta clasica', 'Sabores y rellenos de tortas clasicas.'],
+  'premium'   => ['Torta premium', 'Especialidades premium.'],
+  'extra'     => ['Extra', 'Adicionales y recargos.'],
+  'galeria'   => ['Foto galeria', 'Fotos finales del libro.'],
+];
 ?>
 <?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
-<section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+<section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8" x-data="{ configOpen: false }">
   <div>
     <h1 class="section-title">Productos del catalogo</h1>
     <p class="text-chocolate-700 mt-2">
@@ -94,13 +121,87 @@ $titulo = 'Productos del catalogo';
       <a href="<?= url('catalogo.php') ?>" target="_blank" class="text-rose-500 hover:underline">libro 3D publico →</a>
     </p>
   </div>
-  <div class="flex gap-2">
-    <a href="<?= url('usuarios.php#catalogo') ?>" class="btn btn-secondary">
+  <div class="flex flex-wrap gap-2">
+    <button type="button" @click="configOpen = true" class="btn btn-secondary">
       <span>⚙️</span> Configuracion
-    </a>
-    <a href="<?= url('producto.php?accion=crear') ?>" class="btn btn-primary">
-      <span>➕</span> Nuevo producto
-    </a>
+    </button>
+  </div>
+
+  <div x-show="configOpen"
+       x-transition
+       x-cloak
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+       @keydown.escape.window="configOpen = false">
+    <div class="card max-w-2xl w-full max-h-[90vh] overflow-y-auto" @click.outside="configOpen = false">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h2 class="font-sweet text-2xl text-rose-500">Configuracion del catalogo</h2>
+          <p class="text-sm text-chocolate-500 mt-1">Portada, Instagram y telefono del libro 3D publico.</p>
+        </div>
+        <button type="button" @click="configOpen = false"
+                class="h-10 w-10 rounded-full bg-rose-50 text-chocolate-700 hover:bg-rose-100 font-bold"
+                aria-label="Cerrar configuracion">×</button>
+      </div>
+
+      <form method="post" action="<?= url('productos.php?accion=guardar_catalogo') ?>" class="space-y-5">
+        <?= csrf_field() ?>
+
+        <div>
+          <label class="block text-sm font-bold text-chocolate-700 mb-1">Tagline de la portada</label>
+          <input type="text" name="catalogo_tagline" maxlength="120"
+                 value="<?= e($tagline) ?>"
+                 placeholder="PASTELERIA Y REPOSTERIA ARTESANAL">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-chocolate-700 mb-1">Instagram / Handle</label>
+            <input type="text" name="catalogo_instagram" maxlength="60"
+                   value="<?= e($instagram) ?>"
+                   placeholder="@dulce.rinconcito">
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-chocolate-700 mb-1">WhatsApp / Telefono</label>
+            <input type="text" name="catalogo_whatsapp" maxlength="60"
+                   value="<?= e($whatsapp) ?>"
+                   placeholder="+56 9 4968 080">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-chocolate-700 mb-1">Emojis decorativos de la portada</label>
+          <input type="text" name="catalogo_cover_deco" maxlength="80"
+                 value="<?= e($coverDeco) ?>"
+                 placeholder="🥐 🧁 🍰 🍪 🧁">
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3 pt-2">
+          <button type="button" @click="configOpen = false" class="btn btn-ghost">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <span>💾</span> Guardar configuracion
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="card mb-8">
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div>
+      <h2 class="font-bold text-chocolate-900 text-lg">Crear por seccion</h2>
+      <p class="text-sm text-chocolate-500 mt-1">Cada boton abre solo los campos necesarios para esa parte del libro.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+      <?php foreach ($crearTipos as $tipo => [$label, $help]): ?>
+        <a href="<?= url('producto.php?accion=crear&tipo=' . urlencode($tipo)) ?>"
+           class="rounded-2xl border-2 border-rose-100 bg-cream-50 px-4 py-3 hover:border-rose-300 hover:bg-rose-50 transition-colors">
+          <span class="block font-bold text-chocolate-900"><?= e($label) ?></span>
+          <span class="block text-xs text-chocolate-500 mt-1"><?= e($help) ?></span>
+        </a>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 
@@ -109,8 +210,8 @@ $titulo = 'Productos del catalogo';
     <div class="text-7xl mb-4 animate-wiggle inline-block">📖</div>
     <h3 class="font-sweet text-2xl text-rose-500 mb-2">Tu catalogo esta vacio</h3>
     <p class="text-chocolate-700 mb-6">Agrega tu primer producto para empezar a armar el libro.</p>
-    <a href="<?= url('producto.php?accion=crear') ?>" class="btn btn-primary">
-      <span>➕</span> Agregar primer producto
+    <a href="<?= url('producto.php?accion=crear&tipo=destacado') ?>" class="btn btn-primary">
+      <span>➕</span> Agregar destacado
     </a>
   </div>
 <?php else: ?>

@@ -25,6 +25,8 @@ final class Producto
         'galeria'   => 'Foto galeria',
     ];
 
+    private const TIPOS_CON_VARIANTES_PROPIAS = ['destacado', 'extra'];
+
     public static function all(bool $soloVisibles = false): array
     {
         $sql = 'SELECT * FROM productos';
@@ -83,7 +85,7 @@ final class Producto
             ]
         );
         $id = (int)$db->lastInsertId();
-        if (!empty($data['variantes']) && is_array($data['variantes'])) {
+        if (self::usaVariantesPropias($data['tipo']) && !empty($data['variantes']) && is_array($data['variantes'])) {
             self::saveVariantes($id, $data['variantes']);
         }
         return $id;
@@ -132,7 +134,9 @@ final class Producto
             }
         }
 
-        if (isset($data['variantes']) && is_array($data['variantes'])) {
+        if (!self::usaVariantesPropias($data['tipo'])) {
+            $db->execute('DELETE FROM producto_variantes WHERE producto_id = ?', [$id]);
+        } elseif (isset($data['variantes']) && is_array($data['variantes'])) {
             $db->execute('DELETE FROM producto_variantes WHERE producto_id = ?', [$id]);
             self::saveVariantes($id, $data['variantes']);
         }
@@ -178,6 +182,11 @@ final class Producto
                 [$productoId, $label, $precio, $orden++]
             );
         }
+    }
+
+    private static function usaVariantesPropias(string $tipo): bool
+    {
+        return in_array($tipo, self::TIPOS_CON_VARIANTES_PROPIAS, true);
     }
 
     private static function validate(array $data): void
