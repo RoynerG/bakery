@@ -19,15 +19,19 @@ CREATE TABLE IF NOT EXISTS usuarios (
 -- Tabla: ingredientes
 -- ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS ingredientes (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  nombre        TEXT NOT NULL,
-  unidad_medida TEXT NOT NULL DEFAULT 'pieza'
-                CHECK (unidad_medida IN ('kilo','litro','pieza','gramo','mililitro')),
-  costo_base    REAL NOT NULL DEFAULT 0,
-  notas         TEXT,
-  imagen        TEXT,
-  created_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre           TEXT NOT NULL,
+  unidad_medida    TEXT NOT NULL DEFAULT 'pieza'
+                   CHECK (unidad_medida IN ('kilo','litro','pieza','gramo','mililitro')),
+  costo_base       REAL NOT NULL DEFAULT 0,
+  cantidad_compra  REAL NOT NULL DEFAULT 1,
+  unidad_compra    TEXT NOT NULL DEFAULT 'pieza'
+                   CHECK (unidad_compra IN ('kilo','litro','pieza','gramo','mililitro')),
+  precio_compra    REAL NOT NULL DEFAULT 0,
+  notas            TEXT,
+  imagen           TEXT,
+  created_at       TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_ingredientes_nombre ON ingredientes(nombre);

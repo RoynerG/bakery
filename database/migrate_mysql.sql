@@ -159,4 +159,55 @@ DEALLOCATE PREPARE stmt;
 --   ALTER TABLE notas DROP COLUMN color;
 -- (No la borramos automaticamente por seguridad)
 -- ==========================================================
+
+-- 10. Agregar cantidad_compra a ingredientes (si no existe)
+SET @col_existe = (
+  SELECT COUNT(*) FROM information_schema.columns
+   WHERE table_schema = DATABASE()
+     AND table_name   = 'ingredientes'
+     AND column_name  = 'cantidad_compra'
+);
+SET @sql = IF(@col_existe = 0,
+  'ALTER TABLE `ingredientes` ADD COLUMN `cantidad_compra` DECIMAL(10,4) NOT NULL DEFAULT 1.0000 AFTER `costo_base`',
+  'SELECT "cantidad_compra ya existe" AS msg'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 11. Agregar unidad_compra a ingredientes (si no existe)
+SET @col_existe = (
+  SELECT COUNT(*) FROM information_schema.columns
+   WHERE table_schema = DATABASE()
+     AND table_name   = 'ingredientes'
+     AND column_name  = 'unidad_compra'
+);
+SET @sql = IF(@col_existe = 0,
+  'ALTER TABLE `ingredientes` ADD COLUMN `unidad_compra` ENUM(''kilo'',''litro'',''pieza'',''gramo'',''mililitro'') NOT NULL DEFAULT ''pieza'' AFTER `cantidad_compra`',
+  'SELECT "unidad_compra ya existe" AS msg'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 12. Agregar precio_compra a ingredientes (si no existe)
+SET @col_existe = (
+  SELECT COUNT(*) FROM information_schema.columns
+   WHERE table_schema = DATABASE()
+     AND table_name   = 'ingredientes'
+     AND column_name  = 'precio_compra'
+);
+SET @sql = IF(@col_existe = 0,
+  'ALTER TABLE `ingredientes` ADD COLUMN `precio_compra` DECIMAL(12,4) NOT NULL DEFAULT 0.0000 AFTER `unidad_compra`',
+  'SELECT "precio_compra ya existe" AS msg'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 13. Backfill: para ingredientes existentes, asumimos que el
+-- costo_base guardado equivale a "compré 1 unidad de unidad_medida
+-- por ese precio". Asi la UI muestra algo coherente y editable.
+UPDATE `ingredientes`
+   SET `cantidad_compra` = 1,
+       `unidad_compra`   = `unidad_medida`,
+       `precio_compra`   = `costo_base`
+ WHERE `cantidad_compra` = 1
+   AND `precio_compra`   = 0
+   AND `costo_base`     <> 0;
+
 SELECT 'Migracion completada con exito.' AS resultado;

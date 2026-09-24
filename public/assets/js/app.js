@@ -19,6 +19,39 @@ document.addEventListener('alpine:init', () => {
   // ----- toggleMenu -----
   Alpine.data('toggleMenu', () => ({ open: false }));
 
+  // ----- calcCostoBase (preview en vivo del formulario de inventario) -----
+  Alpine.data('calcCostoBase', () => ({
+    cantidad: 1,
+    unidad: 'gramo',
+    precio: 0,
+    factor(unidad) {
+      return (unidad === 'gramo' || unidad === 'mililitro') ? 0.001 : 1;
+    },
+    unidadBase() {
+      return ['kilo', 'litro', 'pieza'].indexOf(this.unidad) >= 0 ? this.unidad : (this.unidad === 'gramo' ? 'kilo' : 'litro');
+    },
+    unidadBaseLabel() {
+      const map = { kilo: 'kg', litro: 'L', pieza: 'pieza' };
+      return map[this.unidadBase()] || this.unidadBase();
+    },
+    get costoBase() {
+      var c = parseFloat(this.cantidad) || 0;
+      var p = parseFloat(this.precio) || 0;
+      var enUnidadBase = c * this.factor(this.unidad);
+      if (enUnidadBase <= 0) return 0;
+      return Math.round((p / enUnidadBase) * 10000) / 10000;
+    },
+    costoBasePorUnidadCompra() {
+      var c = parseFloat(this.cantidad) || 0;
+      var p = parseFloat(this.precio) || 0;
+      if (c <= 0) return 0;
+      return Math.round((p / c) * 100) / 100;
+    },
+    money(v) {
+      return '$' + (Math.round((v || 0) * 100) / 100).toLocaleString('es-CL');
+    }
+  }));
+
   // ----- agendaCalendar (FullCalendar) -----
   Alpine.data('agendaCalendar', () => ({
     cal: null,

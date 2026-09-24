@@ -40,14 +40,17 @@ CREATE TABLE `usuarios` (
 -- Tabla: ingredientes
 -- ----------------------------------------------------------
 CREATE TABLE `ingredientes` (
-  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nombre`        VARCHAR(120) NOT NULL,
-  `unidad_medida` ENUM('kilo','litro','pieza','gramo','mililitro') NOT NULL DEFAULT 'pieza',
-  `costo_base`    DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
-  `notas`         VARCHAR(255) DEFAULT NULL,
-  `imagen`        VARCHAR(255) DEFAULT NULL,
-  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id`              INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nombre`          VARCHAR(120) NOT NULL,
+  `unidad_medida`   ENUM('kilo','litro','pieza','gramo','mililitro') NOT NULL DEFAULT 'pieza',
+  `costo_base`      DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+  `cantidad_compra` DECIMAL(10,4) NOT NULL DEFAULT 1.0000,
+  `unidad_compra`   ENUM('kilo','litro','pieza','gramo','mililitro') NOT NULL DEFAULT 'pieza',
+  `precio_compra`   DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `notas`           VARCHAR(255) DEFAULT NULL,
+  `imagen`          VARCHAR(255) DEFAULT NULL,
+  `created_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_nombre` (`nombre`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

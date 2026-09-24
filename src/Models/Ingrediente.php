@@ -9,9 +9,12 @@ use App\Database;
  * Modelo: Ingrediente (Insumo)
  *
  * Unidad de medida válida: kilo, litro, pieza, gramo, mililitro.
- * costo_base = costo por 1 unidad de medida.
+ * costo_base = costo por 1 kilo / 1 litro / 1 pieza (unidad base).
  *
  * A partir de v1.1 cada ingrediente puede tener una imagen opcional.
+ * A partir de v1.2 la app acepta datos de compra (cantidad + unidad +
+ * precio) y calcula el costo_base automáticamente, replicando el flujo
+ * del Excel de la usuaria.
  */
 final class Ingrediente
 {
@@ -35,20 +38,39 @@ final class Ingrediente
     /**
      * Crea un ingrediente con su imagen opcional.
      *
-     * @param array  $data           cabecera: nombre, unidad_medida, costo_base, notas
-     * @param string|null $imagenFilename nombre ya subido a /uploads (o null)
+     * Espera en $data:
+     *   - nombre           string
+     *   - unidad_medida    'kilo'|'litro'|'pieza'|'gramo'|'mililitro' (cómo se usa en recetas)
+     *   - cantidad_compra  float > 0   (ej. 1000)
+     *   - unidad_compra    'kilo'|...  (ej. 'gramo')
+     *   - precio_compra    float >= 0  (ej. 1120)
+     *   - notas            string opcional
+     *
+     * El costo_base se calcula automáticamente a partir de la compra.
      */
     public static function create(array $data, ?string $imagenFilename): int
     {
         self::validate($data);
+        $costoBase = self::calcularCostoBase(
+            (float)$data['cantidad_compra'],
+            $data['unidad_compra'],
+            (float)$data['precio_compra']
+        );
+
         $db = Database::getInstance();
         $db->execute(
-            'INSERT INTO ingredientes (nombre, unidad_medida, costo_base, notas, imagen)
-             VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO ingredientes
+                (nombre, unidad_medida, costo_base,
+                 cantidad_compra, unidad_compra, precio_compra,
+                 notas, imagen)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 trim($data['nombre']),
                 $data['unidad_medida'],
-                (float)$data['costo_base'],
+                $costoBase,
+                (float)$data['cantidad_compra'],
+                $data['unidad_compra'],
+                (float)$data['precio_compra'],
                 isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
                 $imagenFilename,
             ]
@@ -59,31 +81,38 @@ final class Ingrediente
     /**
      * Actualiza un ingrediente.
      *
-     * @param array  $data
      * @param string|null $imagenFilename   nuevo archivo (si se subió uno)
-     * @param bool   $reemplazarImagen      true si se debe actualizar la imagen
+     * @param bool        $reemplazarImagen true si se debe actualizar la imagen
      */
     public static function update(int $id, array $data, ?string $imagenFilename, bool $reemplazarImagen): bool
     {
         self::validate($data);
+        $costoBase = self::calcularCostoBase(
+            (float)$data['cantidad_compra'],
+            $data['unidad_compra'],
+            (float)$data['precio_compra']
+        );
 
         if ($reemplazarImagen) {
             $affected = Database::getInstance()->execute(
                 'UPDATE ingredientes
-                    SET nombre = ?, unidad_medida = ?, costo_base = ?, notas = ?,
-                        imagen = ?, updated_at = CURRENT_TIMESTAMP
+                    SET nombre = ?, unidad_medida = ?, costo_base = ?,
+                        cantidad_compra = ?, unidad_compra = ?, precio_compra = ?,
+                        notas = ?, imagen = ?, updated_at = CURRENT_TIMESTAMP
                   WHERE id = ?',
                 [
                     trim($data['nombre']),
                     $data['unidad_medida'],
-                    (float)$data['costo_base'],
+                    $costoBase,
+                    (float)$data['cantidad_compra'],
+                    $data['unidad_compra'],
+                    (float)$data['precio_compra'],
                     isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
                     $imagenFilename,
                     $id,
                 ]
             )->rowCount();
 
-            // Borrar imagen anterior si estamos reemplazando
             $anterior = self::find($id);
             if ($anterior && !empty($anterior['imagen']) && $anterior['imagen'] !== $imagenFilename) {
                 self::borrarImagen($anterior['imagen']);
@@ -91,13 +120,17 @@ final class Ingrediente
         } else {
             $affected = Database::getInstance()->execute(
                 'UPDATE ingredientes
-                    SET nombre = ?, unidad_medida = ?, costo_base = ?, notas = ?,
-                        updated_at = CURRENT_TIMESTAMP
+                    SET nombre = ?, unidad_medida = ?, costo_base = ?,
+                        cantidad_compra = ?, unidad_compra = ?, precio_compra = ?,
+                        notas = ?, updated_at = CURRENT_TIMESTAMP
                   WHERE id = ?',
                 [
                     trim($data['nombre']),
                     $data['unidad_medida'],
-                    (float)$data['costo_base'],
+                    $costoBase,
+                    (float)$data['cantidad_compra'],
+                    $data['unidad_compra'],
+                    (float)$data['precio_compra'],
                     isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
                     $id,
                 ]
@@ -133,9 +166,36 @@ final class Ingrediente
         if (!in_array($data['unidad_medida'] ?? '', self::UNIDADES, true)) {
             throw new \InvalidArgumentException('Unidad de medida no válida.');
         }
-        if (!is_numeric($data['costo_base']) || (float)$data['costo_base'] < 0) {
-            throw new \InvalidArgumentException('El costo base debe ser un número mayor o igual a 0.');
+        if (!in_array($data['unidad_compra'] ?? '', self::UNIDADES, true)) {
+            throw new \InvalidArgumentException('Unidad de compra no válida.');
         }
+        $cantidad = (float)($data['cantidad_compra'] ?? 0);
+        if ($cantidad <= 0) {
+            throw new \InvalidArgumentException('La cantidad comprada debe ser mayor a 0.');
+        }
+        $precio = (float)($data['precio_compra'] ?? -1);
+        if ($precio < 0) {
+            throw new \InvalidArgumentException('El precio de compra debe ser mayor o igual a 0.');
+        }
+    }
+
+    /**
+     * Deriva el costo por unidad base (kilo/litro/pieza) a partir de
+     * los datos de compra del ingrediente.
+     *
+     *   costo_base = precio_compra / (cantidad_compra * factor_unidad_compra)
+     *
+     * Ejemplos:
+     *   Compré 1000 g por $1120  →  1120 / (1000 * 0.001) = $1120 / kilo
+     *   Compré 1 pieza por $200  →  200 / (1 * 1)        = $200 / pieza
+     *   Compré 250 g por $2690  →  2690 / (250 * 0.001)  = $10760 / kilo
+     */
+    public static function calcularCostoBase(float $cantidadCompra, string $unidadCompra, float $precioCompra): float
+    {
+        if ($cantidadCompra <= 0) return 0.0;
+        $factor = self::factorUnidad($unidadCompra);
+        $enUnidadBase = $cantidadCompra * $factor; // kilo / litro / pieza
+        return round($precioCompra / $enUnidadBase, 4);
     }
 
     /** Convierte la cantidad al costo real (kilo -> costo_base, gramo -> costo_base/1000, etc.) */

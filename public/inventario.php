@@ -105,7 +105,7 @@ $titulo = 'Inventario';
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-chocolate-700 mb-1">Unidad de medida</label>
+          <label class="block text-sm font-bold text-chocolate-700 mb-1">Unidad de medida (recetas)</label>
           <select name="unidad_medida" required>
             <?php
             $unidadActual = old('unidad_medida', $ingredienteEditar['unidad_medida'] ?? 'pieza');
@@ -124,18 +124,55 @@ $titulo = 'Inventario';
           </select>
         </div>
 
-        <div>
-          <label class="block text-sm font-bold text-chocolate-700 mb-1">Costo por unidad</label>
-          <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-chocolate-500 font-bold">$</span>
-            <input type="number" name="costo_base" step="0.0001" min="0" required
-                   value="<?= e(old('costo_base', $ingredienteEditar['costo_base'] ?? '0')) ?>"
-                   class="pl-8"
-                   placeholder="0.00">
-          </div>
-          <p class="text-xs text-chocolate-500 mt-1">Costo de 1 kilo, 1 litro o 1 pieza.</p>
-        </div>
+        <div></div>
       </div>
+
+      <fieldset class="border-2 border-dashed border-rose-200 rounded-2xl p-4 bg-rose-50/40">
+        <legend class="px-2 text-sm font-bold text-chocolate-700">🧾 Datos de compra</legend>
+        <p class="text-xs text-chocolate-500 mb-3">
+          Cómo lo compraste en el proveedor. La app calcula el costo por kilo/litro/pieza.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" x-data="calcCostoBase()">
+          <div>
+            <label class="block text-xs font-bold text-chocolate-700 mb-1">Cantidad comprada</label>
+            <input type="number" name="cantidad_compra" step="0.0001" min="0.0001" required
+                   x-model.number="cantidad"
+                   value="<?= e(old('cantidad_compra', $ingredienteEditar['cantidad_compra'] ?? '1')) ?>"
+                   placeholder="1000">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-chocolate-700 mb-1">Unidad de compra</label>
+            <select name="unidad_compra" required x-model="unidad">
+              <?php
+              $unidadCompraActual = old('unidad_compra', $ingredienteEditar['unidad_compra'] ?? 'gramo');
+              foreach ($unidades as $key => $label):
+                $sel = $unidadCompraActual === $key ? 'selected' : '';
+              ?>
+                <option value="<?= e($key) ?>" <?= $sel ?>><?= e($label) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-chocolate-700 mb-1">Precio de compra</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-chocolate-500 font-bold">$</span>
+              <input type="number" name="precio_compra" step="0.01" min="0" required
+                     x-model.number="precio"
+                     value="<?= e(old('precio_compra', $ingredienteEditar['precio_compra'] ?? '0')) ?>"
+                     class="pl-8"
+                     placeholder="0.00">
+            </div>
+          </div>
+          <div class="sm:col-span-3 mt-2 p-3 bg-white rounded-xl border-2 border-rose-100">
+            <p class="text-xs text-chocolate-500">Costo calculado por unidad base:</p>
+            <p class="font-bold text-rose-500 text-lg" x-text="money(costoBase) + ' / ' + unidadBaseLabel()"></p>
+            <p class="text-xs text-chocolate-500 mt-1" x-show="costoBasePorUnidadCompra() > 0">
+              Equivale a <span class="font-semibold" x-text="money(costoBasePorUnidadCompra())"></span>
+              por cada <span x-text="unidad"></span>.
+            </p>
+          </div>
+        </div>
+      </fieldset>
 
       <div>
         <label class="block text-sm font-bold text-chocolate-700 mb-1">Notas <span class="text-chocolate-500 font-normal">(opcional)</span></label>
@@ -190,13 +227,20 @@ $titulo = 'Inventario';
             <th class="w-20">Imagen</th>
             <th>Ingrediente</th>
             <th>Unidad</th>
-            <th>Costo / unidad</th>
+            <th>Compra</th>
+            <th>Costo / unidad base</th>
             <th>Notas</th>
             <th class="text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
           <?php foreach ($ingredientes as $ing): ?>
+            <?php
+              $cantCompra = (float)($ing['cantidad_compra'] ?? 1);
+              $uniCompra  = $ing['unidad_compra'] ?? $ing['unidad_medida'];
+              $preCompra  = (float)($ing['precio_compra'] ?? 0);
+              $uniBaseLabel = ['kilo' => 'kg', 'litro' => 'L', 'pieza' => 'pieza'][$ing['unidad_medida']] ?? $ing['unidad_medida'];
+            ?>
             <tr>
               <td>
                 <?php if (!empty($ing['imagen'])): ?>
@@ -212,8 +256,17 @@ $titulo = 'Inventario';
               <td>
                 <span class="badge"><?= e($ing['unidad_medida']) ?></span>
               </td>
+              <td class="text-sm">
+                <span class="text-chocolate-700">
+                  <?= e(rtrim(rtrim(number_format($cantCompra, 3, '.', ''), '0'), '.')) ?>
+                  <?= e($uniCompra) ?>
+                </span>
+                <br>
+                <span class="text-chocolate-500">por <?= format_money($preCompra) ?></span>
+              </td>
               <td>
                 <span class="font-bold text-rose-500"><?= format_money((float)$ing['costo_base']) ?></span>
+                <span class="text-xs text-chocolate-500">/ <?= e($uniBaseLabel) ?></span>
               </td>
               <td class="text-chocolate-700 text-sm">
                 <?= e($ing['notas'] ?? '—') ?>
