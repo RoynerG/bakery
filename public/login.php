@@ -51,7 +51,7 @@ $titulo = 'Iniciar sesión';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=5">
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
