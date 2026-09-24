@@ -1,0 +1,15 @@
+/* ============================================
+   Repostería - Compilación de Tailwind CSS
+   ============================================
+   Este archivo se compila con `npm run build:css`
+   y genera public/assets/css/styles.css que ya
+   está enlazado en header.php.
+   ============================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos personalizados debajo de Tailwind para que
+   tengan mayor especificidad cuando haga falta. */
+@import "./custom.css";

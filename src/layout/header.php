@@ -13,42 +13,8 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <meta name="description" content="Sistema integral para administrar recetas de repostería con costeo automático.">
   <meta name="theme-color" content="#ff6b9d">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['"Quicksand"', 'system-ui', 'sans-serif'],
-            sweet:   ['"Pacifico"', 'cursive'],
-          },
-          colors: {
-            cream:    { 50: '#fffaf3', 100: '#fff3e0', 200: '#ffe5b4' },
-            rose:     { 50: '#fff0f5', 100: '#ffd6e7', 200: '#ffb3d1', 300: '#ff8fb7', 400: '#ff6b9d', 500: '#e8528a', 600: '#c93a73' },
-            chocolate:{ 50: '#f7efe6', 100: '#e8d4bd', 500: '#8b4513', 700: '#5d2f0c', 900: '#3a1d05' },
-            mint:     { 100: '#d4f4e2', 300: '#7dd3a8', 500: '#3eb97a' },
-          },
-          keyframes: {
-            floaty:  { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
-            wiggle:  { '0%,100%': { transform: 'rotate(-3deg)' }, '50%': { transform: 'rotate(3deg)' } },
-            pop:     { '0%': { transform: 'scale(.85)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
-            drip:    { '0%,100%': { transform: 'translateY(0) scaleY(1)' }, '50%': { transform: 'translateY(4px) scaleY(.95)' } },
-            shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
-            sprinkle:{ '0%': { transform: 'translate(0,0) rotate(0)' }, '100%': { transform: 'translate(20px,-30px) rotate(180deg)' } },
-          },
-          animation: {
-            floaty:  'floaty 4s ease-in-out infinite',
-            wiggle:  'wiggle 1.4s ease-in-out infinite',
-            pop:     'pop .35s ease-out both',
-            drip:    'drip 2.4s ease-in-out infinite',
-            shimmer: 'shimmer 2.5s linear infinite',
-            sprinkle:'sprinkle 8s linear infinite',
-          },
-        }
-      }
-    }
-  </script>
+  <!-- Tailwind CSS compilado localmente (tema en tailwind.config.js) -->
+  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=5">
 
   <!-- Fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,9 +26,6 @@ $current = basename($_SERVER['SCRIPT_NAME']);
 
   <!-- Alpine.js -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-  <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=4">
 
   <!-- Favicon: preferimos el logo real si existe, fallback al cupcake SVG -->
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">
