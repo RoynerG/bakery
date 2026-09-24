@@ -16,6 +16,17 @@ Auth::require();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     try {
+        // Verificar que la tabla config exista antes de intentar guardar.
+        // Si no existe, le pedimos al usuario que corra la migracion.
+        try {
+            \App\Database::getInstance()->fetchOne('SELECT 1 FROM config LIMIT 1');
+        } catch (Throwable $e) {
+            throw new RuntimeException(
+                'La tabla `config` aun no existe. Corré la migracion SQL '
+                . '(secciones 16-17 de database/migrate_mysql.sql) en phpMyAdmin '
+                . 'antes de guardar.'
+            );
+        }
         foreach (['catalogo_tagline', 'catalogo_instagram', 'catalogo_whatsapp', 'catalogo_cover_deco'] as $clave) {
             set_config($clave, $_POST[$clave] ?? '');
         }

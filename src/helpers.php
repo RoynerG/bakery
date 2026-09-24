@@ -102,18 +102,25 @@ if (!function_exists('parse_clp')) {
 if (!function_exists('get_config')) {
     /**
      * Lee un valor de la tabla `config`. Si no existe, devuelve $default.
+     * Tolerante: si la tabla no existe aun (migracion pendiente),
+     * devuelve el default en vez de explotar.
      */
     function get_config(string $clave, ?string $default = null): ?string
     {
         static $cache = [];
         if (array_key_exists($clave, $cache)) return $cache[$clave];
-        $row = \App\Database::getInstance()->fetchOne(
-            'SELECT valor FROM config WHERE clave = ?',
-            [$clave]
-        );
-        $val = $row ? ($row['valor'] ?? $default) : $default;
-        $cache[$clave] = $val;
-        return $val;
+        try {
+            $row = \App\Database::getInstance()->fetchOne(
+                'SELECT valor FROM config WHERE clave = ?',
+                [$clave]
+            );
+            $val = $row ? ($row['valor'] ?? $default) : $default;
+            $cache[$clave] = $val;
+            return $val;
+        } catch (\Throwable $e) {
+            $cache[$clave] = $default;
+            return $default;
+        }
     }
 }
 
@@ -135,13 +142,18 @@ if (!function_exists('categoria_variantes')) {
     /**
      * Devuelve los tamanos/precios compartidos de una categoria del
      * catalogo (clasica, premium, destacado). Ordenados por 'orden'.
+     * Tolerante: devuelve array vacio si la tabla no existe.
      */
     function categoria_variantes(string $tipo): array
     {
-        return \App\Database::getInstance()->fetchAll(
-            'SELECT * FROM categoria_variantes WHERE tipo = ? ORDER BY orden ASC, id ASC',
-            [$tipo]
-        );
+        try {
+            return \App\Database::getInstance()->fetchAll(
+                'SELECT * FROM categoria_variantes WHERE tipo = ? ORDER BY orden ASC, id ASC',
+                [$tipo]
+            );
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 }
 
