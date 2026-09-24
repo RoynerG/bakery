@@ -60,9 +60,13 @@
 
 /* Estilo comun de las paginas HTML (insertadas por Three.js) */
 .book-leaf {
+  width: 600px;
+  height: 800px;
   transform-origin: 0% 50%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
 }
 
 .page {
@@ -112,7 +116,7 @@
 .page-inner {
   position: absolute;
   inset: 0;
-  padding: 50px 55px 70px 75px;
+  padding: 42px 54px 54px 68px;
   overflow-y: auto;
   font-family: 'Quicksand', sans-serif;
   color: #5d2f0c;
@@ -240,19 +244,19 @@
 }
 
 .page-title.big {
-  font-size: 2.4rem;
+  font-size: 2.45rem;
   letter-spacing: 4px;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   text-align: center;
 }
 
 .page-lead {
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   line-height: 1.55;
   color: #8b4513;
-  margin: 0 auto 30px;
-  max-width: 440px;
+  margin: 0 auto 20px;
+  max-width: 470px;
 }
 
 /* --- DESTACADOS (Kuchen, Pie, etc.) --- */
@@ -323,43 +327,56 @@
 
 /* --- SECCIONES CLASICA / PREMIUM --- */
 .clasica {
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .catalog-item {
   display: grid;
-  grid-template-columns: 86px 1fr;
-  gap: 14px;
-  align-items: start;
+  grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  max-width: 520px;
+  margin: 0 auto 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(240, 224, 208, 0.85);
+  box-shadow: 0 10px 28px rgba(190, 80, 60, 0.12);
 }
 
 .catalog-item-img {
-  width: 86px;
-  height: 86px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 3px solid #fff;
-  box-shadow: 0 6px 18px rgba(190, 80, 60, 0.22);
+  width: 210px;
+  height: 150px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #fff;
+  border: 6px solid #fff;
+  box-shadow: 0 12px 28px rgba(190, 80, 60, 0.24);
+}
+
+.catalog-item-body {
+  min-width: 0;
 }
 
 .clasica-name {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 700;
   color: #8b4513;
-  font-size: 1.05rem;
-  letter-spacing: 0.5px;
-  margin: 0 0 4px;
+  font-size: 1.55rem;
+  line-height: 1.05;
+  letter-spacing: 0.3px;
+  margin: 0 0 10px;
 }
 
 .clasica-rel {
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   color: #8b4513;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
 }
 
 .clasica-desc {
-  font-size: 0.78rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.55;
   color: #5d2f0c;
   margin: 0;
   white-space: pre-line;
@@ -367,32 +384,32 @@
 
 .clasica-nota {
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #5d2f0c;
-  margin: 24px 0 16px;
+  margin: 14px 0 10px;
   font-style: italic;
 }
 
 /* Tabla de tamaños */
 .size-table {
-  margin: 18px auto 0;
+  margin: 8px auto 0;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #5d2f0c;
-  width: 70%;
+  width: 74%;
 }
 
 .size-table th {
   font-family: 'Cormorant Garamond', serif;
   letter-spacing: 6px;
   font-weight: 500;
-  padding: 8px 12px;
+  padding: 5px 12px;
   font-size: 0.8rem;
   color: #8b4513;
 }
 
 .size-table td {
-  padding: 6px 12px;
+  padding: 4px 12px;
   text-align: center;
 }
 
@@ -572,6 +589,10 @@
    Responsive
    ============================================ */
 @media (max-width: 720px) {
+  .book-leaf {
+    width: min(90vw, 400px);
+    height: min(75vh, 532px);
+  }
   .page {
     width: 90vw !important;
     height: 75vh !important;
@@ -581,7 +602,25 @@
   .page-title.big { font-size: 1.7rem; letter-spacing: 2px; }
   .destacado { grid-template-columns: 80px 1fr; gap: 12px; }
   .destacado-img { width: 80px; height: 80px; }
-  .catalog-item { grid-template-columns: 64px 1fr; gap: 10px; }
-  .catalog-item-img { width: 64px; height: 64px; }
+  .catalog-item {
+    grid-template-columns: 150px 1fr;
+    gap: 12px;
+    padding: 10px;
+  }
+  .catalog-item-img {
+    width: 150px;
+    height: 118px;
+    border-width: 4px;
+  }
   .size-table { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .catalog-item {
+    grid-template-columns: 1fr;
+  }
+  .catalog-item-img {
+    width: 100%;
+    height: 170px;
+  }
 }

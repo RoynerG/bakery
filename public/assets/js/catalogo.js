@@ -15,6 +15,7 @@ class CatalogoBook {
     this.PAGE_W = 600;
     this.PAGE_H = 800;
     this.flipped = 0;
+    this.animating = false;
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(36, window.innerWidth / window.innerHeight, 1, 10000);
@@ -40,6 +41,8 @@ class CatalogoBook {
       if (!tpl) return;
       const el = document.createElement('div');
       el.className = 'book-leaf page page-' + name;
+      el.style.width = this.PAGE_W + 'px';
+      el.style.height = this.PAGE_H + 'px';
       el.appendChild(tpl.content.cloneNode(true));
       const obj = new CSS3DObject(el);
       obj.userData = { name, index: i };
@@ -58,6 +61,8 @@ class CatalogoBook {
     // El book group se centra para que el lomo caiga al medio de la pantalla.
     const w = this.PAGE_W;
     this.leaves.forEach((leaf, i) => {
+      leaf.element.style.width = this.PAGE_W + 'px';
+      leaf.element.style.height = this.PAGE_H + 'px';
       leaf.position.set(w / 2, 0, -i * 0.5); // z-offset para evitar z-fighting
       leaf.rotation.set(0, 0, 0);
     });
@@ -67,19 +72,23 @@ class CatalogoBook {
   }
 
   flipNext() {
-    if (this.flipped >= this.leaves.length) return;
+    if (this.animating || this.flipped >= this.leaves.length - 1) return;
     const leaf = this.leaves[this.flipped];
+    this.animating = true;
     this.animate(leaf, 0, -Math.PI, () => {
       this.flipped++;
+      this.animating = false;
       this.updateCounter();
     });
   }
 
   flipPrev() {
-    if (this.flipped <= 0) return;
+    if (this.animating || this.flipped <= 0) return;
     this.flipped--;
     const leaf = this.leaves[this.flipped];
+    this.animating = true;
     this.animate(leaf, -Math.PI, 0, () => {
+      this.animating = false;
       this.updateCounter();
     });
   }
@@ -110,7 +119,7 @@ class CatalogoBook {
     const current = this.flipped + 1;
     if (counter) counter.textContent = current + ' / ' + total;
     if (prev) prev.disabled = this.flipped <= 0;
-    if (next) next.disabled = this.flipped >= total;
+    if (next) next.disabled = this.flipped >= total - 1;
   }
 
   bindEvents() {
@@ -180,11 +189,11 @@ class CatalogoBook {
       this.PAGE_W = Math.min(window.innerWidth * 0.9, 400);
       this.PAGE_H = this.PAGE_W * 1.33;
       // Re-layout con nuevo tamano
-      this.book.position.set(-this.PAGE_W / 2, 0, 0);
+      this.layout();
     } else {
       this.PAGE_W = 600;
       this.PAGE_H = 800;
-      this.book.position.set(-this.PAGE_W / 2, 0, 0);
+      this.layout();
     }
   }
 

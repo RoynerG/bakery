@@ -28,7 +28,7 @@ $titulo = 'Catalogo';
   <meta name="description" content="Catalogo de productos de <?= e(APP_NAME) ?>: tortas clasicas, premium, kuchen, pie de limon y mas.">
 
   <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=5">
-  <link rel="stylesheet" href="<?= asset('css/catalogo.css') ?>?v=3">
+  <link rel="stylesheet" href="<?= asset('css/catalogo.css') ?>?v=4">
   <link rel="icon" type="image/jpeg" href="<?= asset('img/logo.jpg') ?>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -279,6 +279,6 @@ $titulo = 'Catalogo';
 
   <a href="<?= url('index.php') ?>" class="book-exit" title="Volver al sistema">← Sistema</a>
 
-  <script type="module" src="<?= asset('js/catalogo.js') ?>?v=2"></script>
+  <script type="module" src="<?= asset('js/catalogo.js') ?>?v=4"></script>
 </body>
 </html>
