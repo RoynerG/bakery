@@ -4,12 +4,27 @@
  */
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../src/bootstrap.php';
-require_once __DIR__ . '/../../src/helpers.php';
-
 use App\Models\Producto;
 use App\Auth;
 use App\Database;
+
+// Debug ultra-temprano: capturar cualquier error y mostrarlo.
+if (isset($_GET['debug']) && in_array(strtolower((string)$_GET['debug']), ['1','true','yes'], true)) {
+    @ini_set('display_errors', '1');
+    @ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+    set_error_handler(function ($severity, $message, $file, $line) {
+        echo '<pre style="background:#fee;color:#900;padding:12px;border:2px solid #c00;font-family:monospace;">';
+        echo '<b>PHP ' . htmlspecialchars($severity) . ':</b> ' . htmlspecialchars($message);
+        echo '<br><b>in</b> ' . htmlspecialchars($file) . ':' . $line;
+        echo '</pre>';
+        return true;
+    });
+}
+
+try {
+require_once __DIR__ . '/../../src/bootstrap.php';
+require_once __DIR__ . '/../../src/helpers.php';
 
 Auth::require();
 
@@ -291,5 +306,19 @@ document.addEventListener('alpine:init', () => {
   }));
 });
 </script>
+
+<?php
+} catch (\Throwable $e) {
+    // Si algo explota en productos.php, mostramos el error real
+    // para que sea facil de diagnosticar.
+    echo '<div style="background:#fee;border:2px solid #c00;padding:20px;font-family:monospace;margin:20px;border-radius:8px;">';
+    echo '<h2 style="color:#c00;margin:0 0 10px;">⚠️ Error en productos.php</h2>';
+    echo '<p><b>' . htmlspecialchars(get_class($e)) . ':</b> ' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p><b>Archivo:</b> ' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
+    echo '<details><summary>Stack trace</summary><pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre></details>';
+    echo '</div>';
+    debug_log('productos.php: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+}
+?>
 
 <?php require_once __DIR__ . '/../../src/layout/footer.php'; ?>

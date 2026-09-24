@@ -9,12 +9,27 @@ declare(strict_types=1);
 // 1. Configuración
 require_once __DIR__ . '/../config/config.php';
 
+// 1.1 Debug de errores MUY temprano. Si viene ?debug=1 en la URL,
+//     forzamos display_errors y logueamos a archivo para que cualquier
+//     fallo posterior sea visible.
+if (isset($_GET['debug']) && in_array(strtolower((string)$_GET['debug']), ['1','true','yes'], true)) {
+    @ini_set('display_errors', '1');
+    @ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
+
 // 2. Helpers
 require_once __DIR__ . '/helpers.php';
-require_once __DIR__ . '/debug.php';
 
-// 2.1 Debug: agregar ?debug=1 a la URL para ver errores y stack trace
-debug_install();
+// 2.0 Debug handlers (try/catch alrededor por si algo falla aqui)
+try {
+    require_once __DIR__ . '/debug.php';
+    debug_install();
+} catch (\Throwable $e) {
+    if (isset($_GET['debug'])) {
+        echo '<pre>debug.php error: ' . htmlspecialchars($e->getMessage()) . '</pre>';
+    }
+}
 
 // 3. Autoload manual de clases del namespace App\
 spl_autoload_register(function (string $class) {
