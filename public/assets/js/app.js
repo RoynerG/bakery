@@ -20,20 +20,45 @@ document.addEventListener('alpine:init', () => {
   Alpine.data('toggleMenu', () => ({ open: false }));
 
   // ----- calcCostoBase (preview en vivo del formulario de inventario) -----
-  Alpine.data('calcCostoBase', () => ({
-    cantidad: 1,
-    unidad: 'gramo',
-    precio: 0,
+  Alpine.data('calcCostoBase', (initial) => ({
+    cantidad:   (initial && initial.cantidad != null) ? initial.cantidad : 1,
+    unidad:     (initial && initial.unidad)   || 'gramo',
+    precio:     (initial && initial.precio != null) ? initial.precio : 0,
+    precioFmt:  '',
+
+    init() {
+      this.precioFmt = this.fmtCLP(this.precio);
+    },
+
     factor(unidad) {
       return (unidad === 'gramo' || unidad === 'mililitro') ? 0.001 : 1;
     },
     unidadBase() {
-      return ['kilo', 'litro', 'pieza'].indexOf(this.unidad) >= 0 ? this.unidad : (this.unidad === 'gramo' ? 'kilo' : 'litro');
+      return ['kilo', 'litro', 'pieza'].indexOf(this.unidad) >= 0
+        ? this.unidad
+        : (this.unidad === 'gramo' ? 'kilo' : 'litro');
     },
     unidadBaseLabel() {
       const map = { kilo: 'kg', litro: 'L', pieza: 'pieza' };
       return map[this.unidadBase()] || this.unidadBase();
     },
+
+    /** Formatea un numero entero con separador de miles chileno (punto). */
+    fmtCLP(v) {
+      var n = parseFloat(v) || 0;
+      if (n <= 0) return '';
+      return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    },
+
+    /** Lee lo tipeado en el input, limpia todo lo no numerico,
+        actualiza precio y reescribe el input formateado. */
+    onPrecioInput(event) {
+      var raw = (event.target.value || '').toString().replace(/\D/g, '');
+      this.precio = raw ? parseFloat(raw) : 0;
+      this.precioFmt = this.fmtCLP(this.precio);
+      event.target.value = this.precioFmt;
+    },
+
     get costoBase() {
       var c = parseFloat(this.cantidad) || 0;
       var p = parseFloat(this.precio) || 0;
@@ -48,7 +73,8 @@ document.addEventListener('alpine:init', () => {
       return Math.round((p / c) * 100) / 100;
     },
     money(v) {
-      return '$' + (Math.round((v || 0) * 100) / 100).toLocaleString('es-CL');
+      var n = Math.round((parseFloat(v) || 0));
+      return '$' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
   }));
 

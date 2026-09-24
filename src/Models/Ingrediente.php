@@ -51,11 +51,9 @@ final class Ingrediente
     public static function create(array $data, ?string $imagenFilename): int
     {
         self::validate($data);
-        $costoBase = self::calcularCostoBase(
-            (float)$data['cantidad_compra'],
-            $data['unidad_compra'],
-            (float)$data['precio_compra']
-        );
+        $cantidad = parse_clp($data['cantidad_compra']);
+        $precio   = parse_clp($data['precio_compra']);
+        $costoBase = self::calcularCostoBase($cantidad, $data['unidad_compra'], $precio);
 
         $db = Database::getInstance();
         $db->execute(
@@ -68,9 +66,9 @@ final class Ingrediente
                 trim($data['nombre']),
                 $data['unidad_medida'],
                 $costoBase,
-                (float)$data['cantidad_compra'],
+                $cantidad,
                 $data['unidad_compra'],
-                (float)$data['precio_compra'],
+                $precio,
                 isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
                 $imagenFilename,
             ]
@@ -87,11 +85,9 @@ final class Ingrediente
     public static function update(int $id, array $data, ?string $imagenFilename, bool $reemplazarImagen): bool
     {
         self::validate($data);
-        $costoBase = self::calcularCostoBase(
-            (float)$data['cantidad_compra'],
-            $data['unidad_compra'],
-            (float)$data['precio_compra']
-        );
+        $cantidad = parse_clp($data['cantidad_compra']);
+        $precio   = parse_clp($data['precio_compra']);
+        $costoBase = self::calcularCostoBase($cantidad, $data['unidad_compra'], $precio);
 
         if ($reemplazarImagen) {
             $affected = Database::getInstance()->execute(
@@ -104,9 +100,9 @@ final class Ingrediente
                     trim($data['nombre']),
                     $data['unidad_medida'],
                     $costoBase,
-                    (float)$data['cantidad_compra'],
+                    $cantidad,
                     $data['unidad_compra'],
-                    (float)$data['precio_compra'],
+                    $precio,
                     isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
                     $imagenFilename,
                     $id,
@@ -128,9 +124,9 @@ final class Ingrediente
                     trim($data['nombre']),
                     $data['unidad_medida'],
                     $costoBase,
-                    (float)$data['cantidad_compra'],
+                    $cantidad,
                     $data['unidad_compra'],
-                    (float)$data['precio_compra'],
+                    $precio,
                     isset($data['notas']) && $data['notas'] !== '' ? trim($data['notas']) : null,
                     $id,
                 ]
@@ -169,11 +165,11 @@ final class Ingrediente
         if (!in_array($data['unidad_compra'] ?? '', self::UNIDADES, true)) {
             throw new \InvalidArgumentException('Unidad de compra no válida.');
         }
-        $cantidad = (float)($data['cantidad_compra'] ?? 0);
+        $cantidad = parse_clp($data['cantidad_compra'] ?? 0);
         if ($cantidad <= 0) {
             throw new \InvalidArgumentException('La cantidad comprada debe ser mayor a 0.');
         }
-        $precio = (float)($data['precio_compra'] ?? -1);
+        $precio = parse_clp($data['precio_compra'] ?? -1);
         if ($precio < 0) {
             throw new \InvalidArgumentException('El precio de compra debe ser mayor o igual a 0.');
         }

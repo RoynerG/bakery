@@ -79,6 +79,26 @@ if (!function_exists('format_money')) {
     }
 }
 
+if (!function_exists('parse_clp')) {
+    /**
+     * Parsea un monto en formato chileno: acepta "1.200", "1200",
+     * "1.200.000". Devuelve float. Si llega vacío o no numérico,
+     * devuelve 0. Los CLP no tienen decimales, así que siempre se
+     * devuelve un entero (truncando o redondeando).
+     */
+    function parse_clp(mixed $value): float
+    {
+        if ($value === null || $value === '') return 0.0;
+        $clean = (string)$value;
+        $clean = str_replace(['.', ','], ['', '.'], $clean); // "1.200,5" -> "1200.5"
+        // Si trae punto decimal, mantenerlo; si no, entero.
+        if (strpos($clean, '.') !== false) {
+            return (float)$clean;
+        }
+        return (float)((int)$clean);
+    }
+}
+
 if (!function_exists('format_unidad')) {
     function format_unidad(string $unidad, float $cantidad): string
     {

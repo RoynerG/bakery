@@ -132,7 +132,11 @@ $titulo = 'Inventario';
         <p class="text-xs text-chocolate-500 mb-3">
           Cómo lo compraste en el proveedor. La app calcula el costo por kilo/litro/pieza.
         </p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" x-data="calcCostoBase()">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" x-data='calcCostoBase({
+          cantidad: <?= (float)old("cantidad_compra", $ingredienteEditar["cantidad_compra"] ?? 1) ?>,
+          unidad:   "<?= e(old("unidad_compra", $ingredienteEditar["unidad_compra"] ?? "gramo")) ?>",
+          precio:   <?= (float)old("precio_compra", $ingredienteEditar["precio_compra"] ?? 0) ?>
+        })'>
           <div>
             <label class="block text-xs font-bold text-chocolate-700 mb-1">Cantidad comprada</label>
             <input type="number" name="cantidad_compra" step="0.0001" min="0.0001" required
@@ -153,15 +157,18 @@ $titulo = 'Inventario';
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-chocolate-700 mb-1">Precio de compra</label>
+            <label class="block text-xs font-bold text-chocolate-700 mb-1">Precio de compra (CLP)</label>
             <div class="flex items-stretch gap-2">
               <span class="inline-flex items-center justify-center px-3 text-chocolate-700 font-bold bg-rose-50 border-2 border-rose-100 rounded-2xl">$</span>
-              <input type="number" name="precio_compra" step="0.01" min="0" required
-                     x-model.number="precio"
-                     value="<?= e(old('precio_compra', $ingredienteEditar['precio_compra'] ?? '0')) ?>"
-                     class="flex-1"
-                     placeholder="0.00">
+              <input type="text" inputmode="numeric"
+                     name="precio_compra"
+                     :value="precioFmt"
+                     @input="onPrecioInput($event)"
+                     placeholder="1.200"
+                     required
+                     class="flex-1">
             </div>
+            <p class="text-xs text-chocolate-500 mt-1">Pesos chilenos. Use punto para miles: 1.200 = mil doscientos.</p>
           </div>
           <div class="sm:col-span-3 mt-2 p-3 bg-white rounded-xl border-2 border-rose-100">
             <p class="text-xs text-chocolate-500">Costo calculado por unidad base:</p>
