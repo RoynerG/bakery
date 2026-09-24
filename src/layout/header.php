@@ -21,8 +21,8 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- App JS (define componentes Alpine.js: recipeWizard, confirmDelete) -->
-  <script defer src="<?= asset('js/app.js') ?>?v=7"></script>
+  <!-- App JS (define componentes Alpine.js: recipeWizard, confirmDelete, calcCostoBase) -->
+  <script defer src="<?= asset('js/app.js') ?>?v=8"></script>
 
   <!-- Alpine.js -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
