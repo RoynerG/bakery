@@ -7,8 +7,8 @@ declare(strict_types=1);
 use App\Models\Usuario;
 use App\Auth;
 
-require_once __DIR__ . '/../../src/bootstrap.php';
-require_once __DIR__ . '/../../src/helpers.php';
+require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/../src/helpers.php';
 
 Auth::require();
 
@@ -96,7 +96,7 @@ $instagram = get_config('catalogo_instagram', '@dulce.rinconcito');
 $whatsapp  = get_config('catalogo_whatsapp', '+56 9 4968 080');
 $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
 ?>
-<?php require_once __DIR__ . '/../../src/layout/header.php'; ?>
+<?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
 <!-- Toda la pagina en un unico scope Alpine para que las tabs funcionen -->
 <section x-data="{ tab: '<?= e($tab) ?>' }">
@@ -318,4 +318,4 @@ $coverDeco = get_config('catalogo_cover_deco', '🥐 🧁 🍰 🍪 🧁');
 </section>
 
 <?php clear_old(); ?>
-<?php require_once __DIR__ . '/../../src/layout/footer.php'; ?>
+<?php require_once __DIR__ . '/../src/layout/footer.php'; ?>

@@ -4,8 +4,8 @@
  */
 declare(strict_types=1);
 
-require_once __DIR__ . '/../../src/bootstrap.php';
-require_once __DIR__ . '/../../src/helpers.php';
+require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/../src/helpers.php';
 
 use App\Models\Producto;
 use App\Auth;
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $titulo = $accion === 'crear' ? 'Nuevo producto' : 'Editar producto';
 ?>
-<?php require_once __DIR__ . '/../../src/layout/header.php'; ?>
+<?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
 <section class="mb-8">
   <a href="<?= url('productos.php') ?>" class="text-chocolate-500 hover:text-rose-500 text-sm">← Volver al listado</a>
@@ -198,4 +198,4 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 
-<?php require_once __DIR__ . '/../../src/layout/footer.php'; ?>
+<?php require_once __DIR__ . '/../src/layout/footer.php'; ?>

@@ -4,8 +4,8 @@
  * /usuarios.php (seccion al final). Este archivo queda como
  * compat para no romper enlaces viejos.
  */
-require_once __DIR__ . '/../../src/bootstrap.php';
-require_once __DIR__ . '/../../src/helpers.php';
+require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/../src/helpers.php';
 
 use App\Auth;
 Auth::require();

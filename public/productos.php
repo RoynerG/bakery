@@ -8,8 +8,8 @@ use App\Models\Producto;
 use App\Auth;
 use App\Database;
 
-require_once __DIR__ . '/../../src/bootstrap.php';
-require_once __DIR__ . '/../../src/helpers.php';
+require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/../src/helpers.php';
 
 Auth::require();
 
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $productos = Producto::all();
 $titulo = 'Productos del catalogo';
 ?>
-<?php require_once __DIR__ . '/../../src/layout/header.php'; ?>
+<?php require_once __DIR__ . '/../src/layout/header.php'; ?>
 
 <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
   <div>
@@ -296,4 +296,4 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 
-<?php require_once __DIR__ . '/../../src/layout/footer.php'; ?>
+<?php require_once __DIR__ . '/../src/layout/footer.php'; ?>
