@@ -62,6 +62,7 @@ $current = basename($_SERVER['SCRIPT_NAME']);
           $navItems = [
             ['index.php',     '🏠', 'Inicio'],
             ['recetas.php',   '🍰', 'Recetas'],
+            ['tortas.php',    '🎂', 'Armar torta'],
             ['inventario.php','📦', 'Inventario'],
             ['productos.php', '📖', 'Catalogo'],
             ['notas.php',     '📝', 'Notas'],

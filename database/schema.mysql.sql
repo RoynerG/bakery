@@ -15,6 +15,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Limpieza previa (orden importa por las FK)
 -- ----------------------------------------------------------
 DROP TABLE IF EXISTS `receta_ingredientes`;
+DROP TABLE IF EXISTS `torta_armada_extras`;
+DROP TABLE IF EXISTS `tortas_armadas`;
 DROP TABLE IF EXISTS `recetas`;
 DROP TABLE IF EXISTS `ingredientes`;
 DROP TABLE IF EXISTS `notas`;
@@ -88,6 +90,62 @@ CREATE TABLE `receta_ingredientes` (
     FOREIGN KEY (`receta_id`) REFERENCES `recetas` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_ri_ingrediente`
+    FOREIGN KEY (`ingrediente_id`) REFERENCES `ingredientes` (`id`)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: tortas_armadas (costeo de tortas compuestas)
+-- ----------------------------------------------------------
+CREATE TABLE `tortas_armadas` (
+  `id`                 INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nombre`             VARCHAR(180) NOT NULL,
+  `descripcion`        TEXT,
+  `receta_base_id`     INT UNSIGNED NOT NULL,
+  `receta_base_nombre` VARCHAR(180) NOT NULL,
+  `porciones_objetivo` INT UNSIGNED NOT NULL DEFAULT 1,
+  `base_porciones`     INT UNSIGNED NOT NULL DEFAULT 1,
+  `base_costo_total`   DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `base_factor`        DECIMAL(12,6) NOT NULL DEFAULT 1.000000,
+  `base_costo_usado`   DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `costo_extras`       DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `otros_costos`       DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `iva_porcentaje`     DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+  `iva_monto`          DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `margen_porcentaje`  DECIMAL(6,2) NOT NULL DEFAULT 60.00,
+  `ganancia_monto`     DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `costo_total`        DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `precio_sugerido`    DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `created_at`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_receta_base` (`receta_base_id`),
+  KEY `idx_updated` (`updated_at`),
+  CONSTRAINT `fk_torta_base_receta`
+    FOREIGN KEY (`receta_base_id`) REFERENCES `recetas` (`id`)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------------------------------------
+-- Tabla: torta_armada_extras (rellenos e insumos adicionales)
+-- ----------------------------------------------------------
+CREATE TABLE `torta_armada_extras` (
+  `id`                 INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `torta_armada_id`    INT UNSIGNED NOT NULL,
+  `ingrediente_id`     INT UNSIGNED NOT NULL,
+  `ingrediente_nombre` VARCHAR(120) NOT NULL,
+  `unidad_medida`      ENUM('kilo','litro','pieza','gramo','mililitro') NOT NULL,
+  `cantidad`           DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+  `costo_unitario`     DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `subtotal`           DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `orden`              INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_torta` (`torta_armada_id`, `orden`),
+  KEY `idx_ingrediente` (`ingrediente_id`),
+  CONSTRAINT `fk_tae_torta`
+    FOREIGN KEY (`torta_armada_id`) REFERENCES `tortas_armadas` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_tae_ingrediente`
     FOREIGN KEY (`ingrediente_id`) REFERENCES `ingredientes` (`id`)
     ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

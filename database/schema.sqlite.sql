@@ -70,6 +70,56 @@ CREATE INDEX IF NOT EXISTS idx_ri_receta      ON receta_ingredientes(receta_id);
 CREATE INDEX IF NOT EXISTS idx_ri_ingrediente ON receta_ingredientes(ingrediente_id);
 
 -- ----------------------------------------------------------
+-- Tabla: tortas_armadas (costeo de tortas compuestas)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tortas_armadas (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre              TEXT NOT NULL,
+  descripcion         TEXT,
+  receta_base_id      INTEGER NOT NULL,
+  receta_base_nombre  TEXT NOT NULL,
+  porciones_objetivo  INTEGER NOT NULL DEFAULT 1,
+  base_porciones      INTEGER NOT NULL DEFAULT 1,
+  base_costo_total    REAL NOT NULL DEFAULT 0,
+  base_factor         REAL NOT NULL DEFAULT 1,
+  base_costo_usado    REAL NOT NULL DEFAULT 0,
+  costo_extras        REAL NOT NULL DEFAULT 0,
+  otros_costos        REAL NOT NULL DEFAULT 0,
+  iva_porcentaje      REAL NOT NULL DEFAULT 0,
+  iva_monto           REAL NOT NULL DEFAULT 0,
+  margen_porcentaje   REAL NOT NULL DEFAULT 60,
+  ganancia_monto      REAL NOT NULL DEFAULT 0,
+  costo_total         REAL NOT NULL DEFAULT 0,
+  precio_sugerido     REAL NOT NULL DEFAULT 0,
+  created_at          TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at          TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (receta_base_id) REFERENCES recetas(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_tortas_base    ON tortas_armadas(receta_base_id);
+CREATE INDEX IF NOT EXISTS idx_tortas_updated ON tortas_armadas(updated_at DESC);
+
+-- ----------------------------------------------------------
+-- Tabla: torta_armada_extras (rellenos e insumos adicionales)
+-- ----------------------------------------------------------
+CREATE TABLE IF NOT EXISTS torta_armada_extras (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  torta_armada_id     INTEGER NOT NULL,
+  ingrediente_id      INTEGER NOT NULL,
+  ingrediente_nombre  TEXT NOT NULL,
+  unidad_medida       TEXT NOT NULL CHECK (unidad_medida IN ('kilo','litro','pieza','gramo','mililitro')),
+  cantidad            REAL NOT NULL DEFAULT 0,
+  costo_unitario      REAL NOT NULL DEFAULT 0,
+  subtotal            REAL NOT NULL DEFAULT 0,
+  orden               INTEGER NOT NULL DEFAULT 0,
+  FOREIGN KEY (torta_armada_id) REFERENCES tortas_armadas(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (ingrediente_id) REFERENCES ingredientes(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_tae_torta       ON torta_armada_extras(torta_armada_id, orden);
+CREATE INDEX IF NOT EXISTS idx_tae_ingrediente ON torta_armada_extras(ingrediente_id);
+
+-- ----------------------------------------------------------
 -- Tabla: categorias (etiquetas con emoji para notas)
 -- ----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS categorias (
