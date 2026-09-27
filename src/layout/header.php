@@ -14,7 +14,7 @@ $current = basename($_SERVER['SCRIPT_NAME']);
   <meta name="theme-color" content="#ff6b9d">
 
   <!-- Tailwind CSS compilado localmente (tema en tailwind.config.js) -->
-  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=5">
+  <link rel="stylesheet" href="<?= asset('css/styles.css') ?>?v=6">
 
   <!-- Fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,32 +45,53 @@ $current = basename($_SERVER['SCRIPT_NAME']);
     <span class="sweet sweet-8">🍮</span>
   </div>
 
+  <?php
+  $navItems = [
+    ['index.php',     '🏠', 'Inicio', 'main'],
+    ['recetas.php',   '🍰', 'Recetas', 'production'],
+    ['tortas.php',    '🎂', 'Armar torta', 'production'],
+    ['inventario.php','📦', 'Inventario', 'production'],
+    ['productos.php', '📖', 'Catalogo', 'main'],
+    ['notas.php',     '📝', 'Notas', 'management'],
+    ['agenda.php',    '📅', 'Agenda', 'management'],
+  ];
+
+  $isActiveNav = static function (string $href, string $label) use ($current): bool {
+      if ($label === 'Recetas') {
+          return in_array($current, ['recetas.php', 'receta.php', 'ver-receta.php'], true);
+      }
+      if ($label === 'Catalogo') {
+          return in_array($current, ['productos.php', 'producto.php', 'catalogo.php'], true);
+      }
+      return $current === $href;
+  };
+
+  $mainNav = array_values(array_filter($navItems, fn($item) => $item[3] === 'main'));
+  $productionNav = array_values(array_filter($navItems, fn($item) => $item[3] === 'production'));
+  $managementNav = array_values(array_filter($navItems, fn($item) => $item[3] === 'management'));
+  $productionActive = array_reduce($productionNav, fn($carry, $item) => $carry || $isActiveNav($item[0], $item[2]), false);
+  $managementActive = array_reduce($managementNav, fn($carry, $item) => $carry || $isActiveNav($item[0], $item[2]), false);
+  ?>
+
   <!-- NAV -->
   <header class="relative z-20">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <div class="flex items-center justify-between bg-white/70 backdrop-blur-md rounded-full shadow-lg px-6 py-3 border-2 border-rose-100">
+      <div x-data="{ mobileOpen: false, productionOpen: false, managementOpen: false }"
+           @keydown.escape.window="mobileOpen=false; productionOpen=false; managementOpen=false"
+           @click.outside="mobileOpen=false; productionOpen=false; managementOpen=false"
+           class="relative bg-white/75 backdrop-blur-md rounded-3xl lg:rounded-full shadow-lg px-4 sm:px-5 lg:px-6 py-3 border-2 border-rose-100">
+        <div class="flex items-center justify-between gap-4">
         <!-- Logo -->
-        <a href="<?= url('index.php') ?>" class="flex items-center gap-3 group">
+        <a href="<?= url('index.php') ?>" class="flex items-center gap-3 group min-w-0">
           <img src="<?= asset('img/logo.jpg') ?>" alt="<?= e(APP_NAME) ?>"
-               class="h-12 w-12 rounded-full object-cover border-2 border-rose-200 shadow-sm group-hover:scale-105 transition-transform">
-          <span class="font-sweet text-2xl text-rose-400 group-hover:text-rose-500 transition-colors"><?= e(APP_NAME) ?></span>
+               class="h-11 w-11 sm:h-12 sm:w-12 rounded-full object-cover border-2 border-rose-200 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+          <span class="font-sweet text-xl sm:text-2xl text-rose-400 group-hover:text-rose-500 transition-colors truncate"><?= e(APP_NAME) ?></span>
         </a>
 
         <!-- Menú desktop -->
-        <div class="hidden md:flex items-center gap-1">
-          <?php
-          $navItems = [
-            ['index.php',     '🏠', 'Inicio'],
-            ['recetas.php',   '🍰', 'Recetas'],
-            ['tortas.php',    '🎂', 'Armar torta'],
-            ['inventario.php','📦', 'Inventario'],
-            ['productos.php', '📖', 'Catalogo'],
-            ['notas.php',     '📝', 'Notas'],
-            ['agenda.php',    '📅', 'Agenda'],
-          ];
-          foreach ($navItems as [$href, $icon, $label]):
-            $staticActive = $label === 'Recetas' ? in_array($current, ['recetas.php','receta.php','ver-receta.php'], true) : ($current === $href);
-          ?>
+        <div class="hidden lg:flex items-center gap-1">
+          <?php foreach ($mainNav as [$href, $icon, $label]): ?>
+            <?php $staticActive = $isActiveNav($href, $label); ?>
             <a href="<?= url($href) ?>"
                class="px-4 py-2 rounded-full font-semibold text-sm transition-all flex items-center gap-2
                       <?= $staticActive
@@ -79,10 +100,66 @@ $current = basename($_SERVER['SCRIPT_NAME']);
               <span><?= $icon ?></span><span><?= e($label) ?></span>
             </a>
           <?php endforeach; ?>
+
+          <div class="relative" @click.outside="productionOpen=false">
+            <button type="button"
+                    @click="productionOpen=!productionOpen; managementOpen=false"
+                    :aria-expanded="productionOpen.toString()"
+                    class="px-4 py-2 rounded-full font-semibold text-sm transition-all flex items-center gap-2
+                           <?= $productionActive
+                               ? 'bg-rose-400 text-white shadow-md shadow-rose-300/50'
+                               : 'text-chocolate-700 hover:bg-rose-50 hover:text-rose-500' ?>">
+              <span>🥣</span>
+              <span>Produccion</span>
+              <svg class="w-4 h-4 transition-transform" :class="productionOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div x-show="productionOpen" x-transition x-cloak
+                 class="absolute left-0 mt-3 w-60 rounded-3xl border-2 border-rose-100 bg-white shadow-xl p-2 z-50">
+              <?php foreach ($productionNav as [$href, $icon, $label]): ?>
+                <?php $staticActive = $isActiveNav($href, $label); ?>
+                <a href="<?= url($href) ?>"
+                   class="flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all
+                          <?= $staticActive ? 'bg-rose-50 text-rose-500' : 'text-chocolate-700 hover:bg-cream-50 hover:text-rose-500' ?>">
+                  <span class="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center"><?= $icon ?></span>
+                  <span><?= e($label) ?></span>
+                </a>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
+          <div class="relative" @click.outside="managementOpen=false">
+            <button type="button"
+                    @click="managementOpen=!managementOpen; productionOpen=false"
+                    :aria-expanded="managementOpen.toString()"
+                    class="px-4 py-2 rounded-full font-semibold text-sm transition-all flex items-center gap-2
+                           <?= $managementActive
+                               ? 'bg-rose-400 text-white shadow-md shadow-rose-300/50'
+                               : 'text-chocolate-700 hover:bg-rose-50 hover:text-rose-500' ?>">
+              <span>🗂️</span>
+              <span>Gestion</span>
+              <svg class="w-4 h-4 transition-transform" :class="managementOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div x-show="managementOpen" x-transition x-cloak
+                 class="absolute right-0 mt-3 w-56 rounded-3xl border-2 border-rose-100 bg-white shadow-xl p-2 z-50">
+              <?php foreach ($managementNav as [$href, $icon, $label]): ?>
+                <?php $staticActive = $isActiveNav($href, $label); ?>
+                <a href="<?= url($href) ?>"
+                   class="flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all
+                          <?= $staticActive ? 'bg-rose-50 text-rose-500' : 'text-chocolate-700 hover:bg-cream-50 hover:text-rose-500' ?>">
+                  <span class="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center"><?= $icon ?></span>
+                  <span><?= e($label) ?></span>
+                </a>
+              <?php endforeach; ?>
+            </div>
+          </div>
         </div>
 
         <!-- Usuario / login (desktop) -->
-        <div class="hidden md:flex items-center gap-2 ml-2">
+        <div class="hidden lg:flex items-center gap-2 ml-2">
           <?php if (\App\Auth::check()): ?>
             <a href="<?= url('index.php') ?>" class="flex items-center gap-2 group">
               <span class="w-8 h-8 rounded-full bg-rose-200 text-rose-700 flex items-center justify-center text-sm font-bold">
@@ -115,20 +192,30 @@ $current = basename($_SERVER['SCRIPT_NAME']);
         </div>
 
         <!-- Menú móvil -->
-        <button x-data="{open:false}" @click="open=!open" class="md:hidden p-2 rounded-full hover:bg-rose-50">
-          <svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        <button type="button"
+                @click="mobileOpen=!mobileOpen"
+                :aria-expanded="mobileOpen.toString()"
+                aria-label="Abrir menu"
+                class="lg:hidden h-11 w-11 rounded-full hover:bg-rose-50 text-rose-500 transition-all flex items-center justify-center shrink-0">
+          <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+          <svg x-show="mobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-      </div>
+        </div>
 
       <!-- Menú móvil expandido -->
-      <div x-data="{open:false}" @click.outside="open=false" class="md:hidden mt-2">
-        <button @click="open=!open" class="sr-only">menú</button>
-        <div x-show="open" x-transition x-cloak class="bg-white rounded-3xl shadow-xl border-2 border-rose-100 p-3 space-y-1">
+      <div x-show="mobileOpen" x-transition x-cloak class="lg:hidden mt-3">
+        <div class="bg-white rounded-3xl shadow-xl border-2 border-rose-100 p-3 space-y-1">
           <?php foreach ($navItems as [$href, $icon, $label]): ?>
-            <a href="<?= url($href) ?>" class="block px-4 py-3 rounded-2xl hover:bg-rose-50 font-semibold flex items-center gap-2">
-              <span><?= $icon ?></span><?= e($label) ?>
+            <?php $staticActive = $isActiveNav($href, $label); ?>
+            <a href="<?= url($href) ?>"
+               class="px-4 py-3 rounded-2xl font-semibold flex items-center gap-3 transition-all
+                      <?= $staticActive ? 'bg-rose-400 text-white shadow-md shadow-rose-300/40' : 'text-chocolate-700 hover:bg-rose-50 hover:text-rose-500' ?>">
+              <span class="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center"><?= $icon ?></span>
+              <span><?= e($label) ?></span>
             </a>
           <?php endforeach; ?>
           <div class="border-t border-rose-100 my-1"></div>
@@ -151,6 +238,7 @@ $current = basename($_SERVER['SCRIPT_NAME']);
             </a>
           <?php endif; ?>
         </div>
+      </div>
       </div>
     </nav>
   </header>
